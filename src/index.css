@@ -1,0 +1,87 @@
+/* 引入Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 导入字体 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* 自定义工具类 */
+@layer utilities {
+  .content-auto {
+    content-visibility: auto;
+  }
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .card-hover {
+    transition: all 0.3s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+}
+
+/* 全局样式 */
+body {
+  @apply font-inter text-white;
+  background-color: transparent;
+  min-height: 100vh;
+}
+
+/* 文章内容样式 */
+.prose {
+  @apply max-w-none text-white/90;
+}
+
+.prose h2, .prose h3 {
+  @apply text-white font-bold mt-8 mb-4;
+}
+
+.prose p {
+  @apply mb-4 leading-relaxed;
+}
+
+.prose ol {
+  @apply list-decimal pl-5 mb-4 space-y-2;
+}
+
+.prose strong {
+  @apply font-semibold text-white;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* 优化背景图片显示 */
+.bg-cover {
+  background-size: cover;
+}
+
+.bg-fixed {
+  background-attachment: fixed;
+}
+
+.bg-center {
+  background-position: center;
+}
+
+.bg-no-repeat {
+  background-repeat: no-repeat;
+}
