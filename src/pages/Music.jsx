@@ -17,58 +17,23 @@ const Music = () => {
   const songs = [
     {
       id: 1,
-      title: "夜曲",
-      artist: "周杰伦",
-      album: "十一月的萧邦",
-      duration: "3:45",
+      title: "打火机",
+      artist: "Penny",
+      album: "打火机",
+      duration: "2:33",
       cover: "https://picsum.photos/seed/album1/300/300",
-      url: "https://example.com/song1.mp3"
+      url: "/audio/yequ.mp3"
     },
     {
       id: 2,
-      title: "青花瓷",
-      artist: "周杰伦",
-      album: "我很忙",
+      title: "爱错",
+      artist: "王力宏",
+      album: "恋爱占星音乐全精选",
       duration: "3:58",
       cover: "https://picsum.photos/seed/album2/300/300",
-      url: "https://example.com/song2.mp3"
+      url: "/audio/aicuo.mp3"
     },
-    {
-      id: 3,
-      title: "稻香",
-      artist: "周杰伦",
-      album: "魔杰座",
-      duration: "4:32",
-      cover: "https://picsum.photos/seed/album3/300/300",
-      url: "https://example.com/song3.mp3"
-    },
-    {
-      id: 4,
-      title: "告白气球",
-      artist: "周杰伦",
-      album: "周杰伦的床边故事",
-      duration: "3:34",
-      cover: "https://picsum.photos/seed/album4/300/300",
-      url: "https://example.com/song4.mp3"
-    },
-    {
-      id: 5,
-      title: "七里香",
-      artist: "周杰伦",
-      album: "七里香",
-      duration: "4:05",
-      cover: "https://picsum.photos/seed/album5/300/300",
-      url: "https://example.com/song5.mp3"
-    },
-    {
-      id: 6,
-      title: "晴天",
-      artist: "周杰伦",
-      album: "叶惠美",
-      duration: "4:29",
-      cover: "https://picsum.photos/seed/album6/300/300",
-      url: "https://example.com/song6.mp3"
-    }
+    
   ];
 
   // 格式化时间
@@ -80,25 +45,22 @@ const Music = () => {
 
   // 播放/暂停切换
   const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    
     if (isPlaying) {
-      audioRef.current.pause();
+      audio.pause();
     } else {
-      audioRef.current.play().catch(err => {
+      audio.play().catch(err => {
         console.log("播放失败:", err);
       });
     }
-    setIsPlaying(!isPlaying);
   };
 
   // 播放指定歌曲
   const playSong = (index) => {
     setCurrentSong(index);
     setIsPlaying(true);
-    
-    // 模拟播放过程
-    setTimeout(() => {
-      setDuration(180); // 模拟歌曲时长3分钟
-    }, 100);
   };
 
   // 上一首
@@ -115,43 +77,89 @@ const Music = () => {
 
   // 更新进度条
   const updateProgress = (e) => {
-    if (progressRef.current) {
-      const progressBar = progressRef.current;
-      const clickPosition = e.nativeEvent.offsetX;
-      const progressBarWidth = progressBar.offsetWidth;
-      const newProgress = (clickPosition / progressBarWidth) * 100;
-      setProgress(newProgress);
-      
-      // 模拟当前时间更新
-      const newTime = (newProgress / 100) * duration;
-      setCurrentTime(newTime);
-    }
+    const audio = audioRef.current;
+    const progressBar = progressRef.current;
+    
+    if (!audio || !progressBar) return;
+    
+    const clickPosition = e.nativeEvent.offsetX;
+    const progressBarWidth = progressBar.offsetWidth;
+    const newProgress = (clickPosition / progressBarWidth) * 100;
+    const newTime = (newProgress / 100) * (audio.duration || duration);
+    
+    setProgress(newProgress);
+    audio.currentTime = newTime;
   };
 
   // 更新音量
   const updateVolume = (e) => {
     const newVolume = e.target.value / 100;
     setVolume(newVolume);
+    
+    const audio = audioRef.current;
+    if (audio) {
+      audio.volume = newVolume;
+    }
   };
 
-  // 模拟时间更新
+  // 当前歌曲变化时重置状态
   useEffect(() => {
-    let interval;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setCurrentTime(prev => {
-          if (prev >= duration) {
-            playNext();
-            return 0;
-          }
-          return prev + 1;
-        });
-        setProgress((currentTime / duration) * 100);
-      }, 1000);
-    }
+    setCurrentTime(0);
+    setProgress(0);
+    setDuration(0);
     
-    return () => clearInterval(interval);
-  }, [isPlaying, currentTime, duration]);
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(error => {
+        console.log("播放失败:", error);
+        setIsPlaying(false);
+      });
+    }
+  }, [currentSong]);
+
+  // 监听音频事件
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateTime = () => {
+      setCurrentTime(audio.currentTime);
+      if (audio.duration) {
+        setDuration(audio.duration);
+        setProgress((audio.currentTime / audio.duration) * 100);
+      }
+    };
+
+    const updateDuration = () => {
+      if (audio.duration) {
+        setDuration(audio.duration);
+      }
+    };
+
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      playNext();
+    };
+
+    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('loadedmetadata', updateDuration);
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('timeupdate', updateTime);
+      audio.removeEventListener('loadedmetadata', updateDuration);
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [currentSong]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-900 via-blue-900 to-indigo-900 text-white">
@@ -183,7 +191,7 @@ const Music = () => {
               <div className="mb-6">
                 <div className="flex justify-between text-sm text-white/70 mb-2">
                   <span>{formatTime(currentTime)}</span>
-                  <span>{songs[currentSong].duration}</span>
+                  <span>{formatTime(duration)}</span>
                 </div>
                 <div 
                   className="h-2 bg-white/20 rounded-full cursor-pointer"
@@ -297,10 +305,6 @@ const Music = () => {
       <audio 
         ref={audioRef} 
         src={songs[currentSong].url}
-        onLoadedMetadata={() => {
-          // 模拟获取音频时长
-          setDuration(180);
-        }}
       />
 
       {/* 全局样式 */}
