@@ -7,6 +7,9 @@ import Home from "./pages/Home";
 import PostDetail from "./pages/PostDetail";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Love from "./pages/Love";
+import Music from "./pages/Music";
+import Travel from "./pages/Travel";
 import NotFound from "./pages/NotFound";
 import { postsData } from "./utils/data";
 
@@ -49,20 +52,18 @@ function App() {
     >
       <div className="flex flex-col min-h-screen">
         <Navbar isScrolled={isScrolled} />
-
         <main className="flex-grow pt-24 pb-16">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route
-              path="/post/:id"
-              element={<PostDetail getPostById={getPostById} />}
-            />
             <Route path="/about" element={<About />} />
+            <Route path="/love" element={<Love />} />
+            <Route path="/music" element={<Music />} />
+                <Route path="/travel" element={<Travel />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/post/:id" element={<PostDetail getPostById={getPostById} />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
-
         <Footer />
         <BackToTop />
       </div>

@@ -1,15 +1,18 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 const Navbar = ({ isScrolled }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
   const navLinks = [
-    { name: '首页', path: '/' },
-    { name: '文章', path: '/article' },
-    { name: '关于', path: '/about' },
-    { name: '联系', path: '/contact' }
+    { name: "首页", path: "/" },
+    { name: "关于", path: "/about" },
+    { name: "love", path: "/love" },
+    { name: "相册", path: "/travel" },
+    { name: "音乐", path: "/music" },
+    { name: "联系", path: "/contact" },
+
   ];
 
   return (
