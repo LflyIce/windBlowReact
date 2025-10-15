@@ -1,27 +1,46 @@
 # 个人博客网站 (React + Tailwind CSS)
 
-一个现代化、响应式的个人博客网站实现，基于React 18和Tailwind CSS构建，具有优雅的UI设计和流畅的用户体验。
+一个现代化、响应式的个人博客网站实现，基于 React 和 Tailwind CSS 构建，具有优雅的 UI 设计和流畅的用户体验。
+
+![项目预览](/imgs/featured.jpg)
+
+## 目录
+
+- [功能特点](#功能特点)
+- [技术栈](#技术栈)
+- [项目结构](#项目结构)
+- [安装和运行](#安装和运行)
+- [构建生产版本](#构建生产版本)
+- [自定义配置](#自定义配置)
+- [图片替换指南](#图片替换指南)
+- [浏览器支持](#浏览器支持)
+- [许可证](#许可证)
 
 ## 功能特点
 
-- 响应式设计，完美适配移动端、平板和桌面设备
-- 动态导航栏，滚动时自动调整样式
-- 特色文章展示区，突出优质内容
-- 文章卡片布局，带有精美的悬停动画效果
-- 分类导航系统，方便内容浏览
-- 作者信息展示和社交链接
-- 邮件订阅功能，便于用户获取更新
-- 平滑滚动和回到顶部功能
+- 📱 **响应式设计** - 完美适配移动端、平板和桌面设备
+- 🖱️ **动态导航栏** - 滚动时自动调整样式
+- 🌟 **特色文章展示区** - 突出优质内容
+- 🃏 **文章卡片布局** - 带有精美的悬停动画效果
+- 🔖 **分类导航系统** - 方便内容浏览
+- 👤 **作者信息展示** - 包含社交链接
+- 📧 **邮件订阅功能** - 便于用户获取更新
+- 🚀 **平滑滚动** - 回到顶部功能
 
 ## 技术栈
 
-- **前端框架**: React 18
-- **路由管理**: React Router v6
-- **样式解决方案**: Tailwind CSS 3
-- **图标库**: Font Awesome 4.7
-- **字体**: Inter (Google Fonts)
+- **前端框架**: [React 19](https://reactjs.org/)
+- **路由管理**: [React Router v7](https://reactrouter.com/)
+- **样式解决方案**: [Tailwind CSS 3](https://tailwindcss.com/)
+- **构建工具**: [Create React App](https://create-react-app.dev/)
+- **测试套件**: 
+  - [@testing-library/react](https://testing-library.com/docs/react-testing-library/intro/)
+  - [@testing-library/jest-dom](https://github.com/testing-library/jest-dom)
+- **开发规范**: [ESLint](https://eslint.org/) + [Prettier](https://prettier.io/)
 
 ## 项目结构
+
+```
 src/
 ├── components/          # 可复用组件
 │   ├── layout/          # 布局组件
@@ -44,42 +63,36 @@ src/
 │   └── data.js          # 静态数据
 ├── App.js               # 根组件
 └── index.js             # 入口文件
-
-## 图片替换指南
-
-本项目默认使用占位图片，您可以按照以下步骤替换为poetize.cn风格的图片：
-
-1. 参考 `IMAGE_REPLACEMENT_GUIDE.md` 文件中的详细说明
-2. 准备符合要求的图片文件
-3. 将图片文件放入 `public/imgs/` 目录中
-4. 替换同名文件以更新网站中的图片
-
-推荐使用与poetize.cn网站风格一致的图片，包括：
-- 深色或柔和色调的背景图片
-- 高质量的文章配图
-- 专业的作者头像
-- 一致的视觉风格
+```
 
 ## 安装和运行
 
-1. 克隆项目到本地
-   ```
+1. 克隆项目到本地：
+
+   ```bash
    git clone <项目地址>
    ```
 
-2. 进入项目目录
-   ```
+2. 进入项目目录：
+
+   ```bash
    cd my-blog
    ```
 
-3. 安装依赖
-   ```
+3. 安装依赖：
+
+   ```bash
    npm install
+   # 或者使用 yarn
+   yarn install
    ```
 
-4. 启动开发服务器
-   ```
+4. 启动开发服务器：
+
+   ```bash
    npm start
+   # 或者使用 yarn
+   yarn start
    ```
 
 5. 在浏览器中访问 http://localhost:3000 查看网站
@@ -88,18 +101,29 @@ src/
 
 运行以下命令构建生产版本：
 
-```
+```bash
 npm run build
+# 或者使用 yarn
+yarn build
 ```
 
 构建后的文件将位于 `build/` 目录中，可以部署到任何静态网站托管服务上。
 
 ## 自定义配置
 
-- **Tailwind CSS配置**: `tailwind.config.js`
-- **PostCSS配置**: `postcss.config.js`
-- **全局样式**: `src/index.css`
-- **静态数据**: `src/utils/data.js`
+| 配置文件 | 用途 |
+|---------|------|
+| [`tailwind.config.js`](tailwind.config.js) | Tailwind CSS 配置 |
+| [`postcss.config.js`](postcss.config.js) | PostCSS 配置 |
+| [`src/index.css`](src/index.css) | 全局样式 |
+| [`src/utils/data.js`](src/utils/data.js) | 静态数据 |
+
+## 图片替换指南
+
+1. 参考 [`IMAGE_REPLACEMENT_GUIDE.md`](IMAGE_REPLACEMENT_GUIDE.md) 文件中的详细说明
+2. 准备符合要求的图片文件
+3. 将图片文件放入 `public/imgs/` 目录中
+4. 替换同名文件以更新网站中的图片
 
 ## 浏览器支持
 
@@ -111,4 +135,11 @@ npm run build
 
 ## 许可证
 
-本项目仅供学习和参考使用。
+本项目采用 [木兰宽松许可证，第2版](LICENSE) 授权。
+
+```
+木兰宽松许可证，第2版
+
+您对"软件"的复制、使用、修改及分发受木兰宽松许可证，第2版（"本许可证"）的如下条款的约束：
+...
+```
