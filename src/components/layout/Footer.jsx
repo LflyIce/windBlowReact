@@ -1,62 +1,74 @@
 import { Link } from 'react-router-dom';
+import { author } from '../../utils/data';
 
 const Footer = () => {
+  const navLinks = [
+    { name: '首页', path: '/' },
+    { name: '文章', path: '/article' },
+    { name: '关于', path: '/about' },
+    { name: '联系', path: '/contact' }
+  ];
+
   return (
-    <footer className="bg-gray-900 text-white py-12 border-t border-gray-800">
+    <footer className="bg-white/10 border-t border-white/20 pt-16 pb-8 backdrop-blur-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          <div className="md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <span className="text-emerald-400 text-2xl"><i className="fa fa-feather-alt"></i></span>
-              <span className="font-bold text-xl">Persona Blog</span>
-            </div>
-            <p className="text-gray-400 mb-6 leading-relaxed max-w-md">
-              探索生活的本质，分享关于极简主义、个人成长和可持续生活的思考与实践。
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+          {/* 关于 */}
+          <div className="md:col-span-1">
+            <h3 className="text-xl font-bold text-white mb-4">我的博客</h3>
+            <p className="text-white/70 mb-4">
+              分享技术、生活和思考的个人博客网站。
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-emerald-400 transition-colors duration-200">
-                <i className="fab fa-twitter text-lg"></i>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-emerald-400 transition-colors duration-200">
-                <i className="fab fa-instagram text-lg"></i>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-emerald-400 transition-colors duration-200">
-                <i className="fab fa-github text-lg"></i>
-              </a>
+              {author.socialLinks.map((link, index) => (
+                <a 
+                  key={index} 
+                  href={link.url} 
+                  className="text-white/80 hover:text-white transition-colors"
+                >
+                  <i className={`${link.icon} text-lg`}></i>
+                </a>
+              ))}
             </div>
           </div>
           
-          <div>
-            <h4 className="text-sm font-semibold text-gray-200 mb-4 uppercase tracking-wider">导航</h4>
-            <ul className="space-y-2">
-              <li><Link to="/" className="text-gray-400 hover:text-white transition-colors duration-200 text-sm">首页</Link></li>
-              <li><Link to="/" className="text-gray-400 hover:text-white transition-colors duration-200 text-sm">所有文章</Link></li>
-              <li><Link to="/about" className="text-gray-400 hover:text-white transition-colors duration-200 text-sm">关于我</Link></li>
-              <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors duration-200 text-sm">联系我</Link></li>
-            </ul>
+          {/* 导航链接 */}
+          <div className="md:col-span-2">
+            <h3 className="text-xl font-bold text-white mb-4">快速链接</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="text-white/80 hover:text-white transition-colors"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
           </div>
           
-          <div>
-            <h4 className="text-sm font-semibold text-gray-200 mb-4 uppercase tracking-wider">分类</h4>
-            <ul className="space-y-2">
-              <li><Link to="/" className="text-gray-400 hover:text-white transition-colors duration-200 text-sm">生活方式</Link></li>
-              <li><Link to="/" className="text-gray-400 hover:text-white transition-colors duration-200 text-sm">个人成长</Link></li>
-              <li><Link to="/" className="text-gray-400 hover:text-white transition-colors duration-200 text-sm">阅读</Link></li>
-              <li><Link to="/" className="text-gray-400 hover:text-white transition-colors duration-200 text-sm">职场</Link></li>
-              <li><Link to="/" className="text-gray-400 hover:text-white transition-colors duration-200 text-sm">健康</Link></li>
+          {/* 联系信息 */}
+          <div className="md:col-span-1">
+            <h3 className="text-xl font-bold text-white mb-4">联系信息</h3>
+            <ul className="space-y-2 text-white/70">
+              <li className="flex items-start">
+                <i className="fa fa-envelope mt-1 mr-3 text-white/80"></i>
+                <span>contact@example.com</span>
+              </li>
+              <li className="flex items-start">
+                <i className="fa fa-map-marker mt-1 mr-3 text-white/80"></i>
+                <span>北京市朝阳区</span>
+              </li>
             </ul>
           </div>
         </div>
         
-        <div className="pt-8 border-t border-gray-800 mt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-500 text-sm">
-              &copy; {new Date().getFullYear()} Persona Blog. 保留所有权利。
-            </p>
-            <p className="text-gray-500 text-sm mt-4 md:mt-0">
-              Made with passion for thoughtful living.
-            </p>
-          </div>
+        {/* 版权信息 */}
+        <div className="border-t border-white/20 pt-8 text-center">
+          <p className="text-white/70">
+            &copy; {new Date().getFullYear()} 我的博客. 保留所有权利。
+          </p>
         </div>
       </div>
     </footer>

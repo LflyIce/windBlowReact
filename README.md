@@ -5,6 +5,8 @@
 ![项目预览](/imgs/Preview/preview1.png)
 ![项目预览](/imgs/Preview/preview2.png)
 
+> 注意：以上图片仅在项目运行时可以正常显示。请执行 `npm start` 启动项目后查看。
+
 ## 目录
 
 - [功能特点](#功能特点)

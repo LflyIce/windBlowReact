@@ -1,64 +1,84 @@
 import { useState } from 'react';
 
 const SubscribeForm = ({ 
-  inputPlaceholder = "输入您的邮箱地址", 
-  buttonText = "立即订阅",
+  inputPlaceholder = "输入您的邮箱", 
+  buttonText = "订阅",
   className = ""
 }) => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [error, setError] = useState('');
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // 简单的邮箱验证
-    if (!email.includes('@')) {
-      setMessage('请输入有效的邮箱地址');
+    setError('');
+
+    if (!email) {
+      setError('请输入邮箱地址');
       return;
     }
-    
+
+    if (!validateEmail(email)) {
+      setError('请输入有效的邮箱地址');
+      return;
+    }
+
+    // 模拟订阅过程
     setIsSubmitting(true);
-    setMessage('');
-    
-    // 模拟API请求
     setTimeout(() => {
       setIsSubmitting(false);
-      setMessage('订阅成功！感谢您的关注。');
+      setIsSubscribed(true);
       setEmail('');
       
-      // 5秒后清除消息
-      setTimeout(() => setMessage(''), 5000);
-    }, 1500);
+      // 3秒后重置订阅状态
+      setTimeout(() => {
+        setIsSubscribed(false);
+      }, 3000);
+    }, 1000);
   };
 
   return (
     <form onSubmit={handleSubmit} className={className}>
-      <input 
-        type="email" 
-        placeholder={inputPlaceholder}
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full px-4 py-3 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-white/50 bg-white/90 backdrop-blur-sm border border-white/30"
-        required
-      />
-      <button 
-        type="submit" 
-        disabled={isSubmitting}
-        className="w-full bg-white/20 text-white font-medium py-3 rounded-lg hover:bg-white/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed backdrop-blur-sm border border-white/30 hover:border-white/50"
-      >
-        {isSubmitting ? (
-          <span className="flex items-center justify-center">
-            <i className="fa fa-spinner fa-spin mr-2"></i> 处理中...
-          </span>
-        ) : (
-          buttonText
-        )}
-      </button>
+      <div className="flex flex-col sm:flex-row gap-3 flex-grow">
+        <div className="flex-grow">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={inputPlaceholder}
+            className="w-full px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50"
+            disabled={isSubmitting || isSubscribed}
+          />
+          {error && <p className="text-red-300 text-sm mt-1">{error}</p>}
+        </div>
+        <button
+          type="submit"
+          disabled={isSubmitting || isSubscribed}
+          className="px-6 py-3 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-colors disabled:opacity-50 whitespace-nowrap border border-white/30"
+        >
+          {isSubmitting ? (
+            <span className="flex items-center">
+              <i className="fa fa-spinner fa-spin mr-2"></i> 订阅中...
+            </span>
+          ) : isSubscribed ? (
+            <span className="flex items-center">
+              <i className="fa fa-check mr-2"></i> 订阅成功
+            </span>
+          ) : (
+            buttonText
+          )}
+        </button>
+      </div>
       
-      {message && (
-        <p className={`text-xs mt-2 ${message.includes('成功') ? 'text-green-300' : 'text-red-300'}`}>
-          {message}
+      {isSubscribed && (
+        <p className="text-green-300 text-sm mt-2 text-center">
+          感谢您的订阅！确认邮件已发送到您的邮箱。
         </p>
       )}
     </form>

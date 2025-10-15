@@ -1,101 +1,111 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import SubscribeForm from '../common/SubscribeForm';
-import { categories, popularPosts, author } from '../../utils/data';
+import { categories, popularPosts } from '../../utils/data';
 
 const Sidebar = () => {
+  const [activeTab, setActiveTab] = useState('categories');
+
   return (
-    <div className="lg:col-span-1">
-      {/* 作者信息 */} 
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl shadow-md p-6 mb-8 text-center border border-white/20">
-        <img 
-          src={author.avatar} 
-          alt={author.name} 
-          className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-white/30"
-        />
-        <h3 className="text-xl font-bold mb-2 text-white">{author.name}</h3>
-        <p className="text-white/80 mb-4">{author.title}</p>
-        <p className="text-white/70 text-sm mb-6">
-          {author.bio}
-        </p>
-        <div className="flex justify-center space-x-4">
-          {author.socialLinks.map((link, index) => (
-            <a 
-              key={index}
-              href={link.url} 
-              className="text-white/70 hover:text-white transition-colors text-lg"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <i className={link.icon}></i>
-            </a>
-          ))}
+    <div className="space-y-8">
+      {/* 分类和热门文章切换 */}
+      <div className="bg-white/5 backdrop-blur-sm rounded-xl shadow-md border border-white/10 overflow-hidden">
+        {/* 标签切换 */}
+        <div className="flex border-b border-white/10">
+          <button
+            onClick={() => setActiveTab('categories')}
+            className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
+              activeTab === 'categories'
+                ? 'bg-white/20 text-white'
+                : 'text-white/70 hover:bg-white/10'
+            }`}
+          >
+            分类
+          </button>
+          <button
+            onClick={() => setActiveTab('popular')}
+            className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
+              activeTab === 'popular'
+                ? 'bg-white/20 text-white'
+                : 'text-white/70 hover:bg-white/10'
+            }`}
+          >
+            热门文章
+          </button>
+        </div>
+        
+        {/* 内容区域 */}
+        <div className="p-6">
+          {activeTab === 'categories' ? (
+            <ul className="space-y-3">
+              {categories.map(category => (
+                <li key={category.id}>
+                  <Link 
+                    to="#" 
+                    className="flex justify-between items-center py-2 text-white/70 hover:text-white transition-colors"
+                  >
+                    <span>{category.name}</span>
+                    <span className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
+                      {category.count}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="space-y-4">
+              {popularPosts.map(post => (
+                <Link 
+                  key={post.id} 
+                  to={`/post/${post.id}`}
+                  className="group flex items-center space-x-3"
+                >
+                  <div className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-white/10">
+                    <img 
+                      src={post.image} 
+                      alt={post.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-medium group-hover:text-white/80 transition-colors line-clamp-2 text-sm">
+                      {post.title}
+                    </h3>
+                    <p className="text-white/50 text-xs mt-1">{post.date}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       
-      {/* 分类 */} 
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl shadow-md p-6 mb-8 border border-white/20">
-        <h3 className="text-xl font-bold mb-4 text-white">分类</h3>
-        <ul className="space-y-3">
-          {categories.map((category) => (
-            <li key={category.id}>
-              <Link 
-                to="/" 
-                className="flex justify-between items-center text-white/80 hover:text-white transition-colors py-2"
-              >
-                <span>{category.name}</span>
-                <span className="bg-white/20 text-white text-xs font-medium px-2 py-1 rounded-full">
-                  {category.count}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+      {/* 订阅组件 */}
+      <div className="bg-white/5 backdrop-blur-sm rounded-xl shadow-md p-6 border border-white/10">
+        <h3 className="text-xl font-bold mb-4 text-white">订阅博客</h3>
+        <p className="text-white/60 mb-4 text-sm">
+          获取最新文章和独家内容
+        </p>
+        <SubscribeForm 
+          inputPlaceholder="输入您的邮箱"
+          buttonText="订阅"
+        />
       </div>
       
-      {/* 热门文章 */} 
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl shadow-md p-6 mb-8 border border-white/20">
-        <h3 className="text-xl font-bold mb-4 text-white">热门文章</h3>
-        <div className="space-y-4">
-          {popularPosts.map((post) => (
+      {/* 标签云 */}
+      <div className="bg-white/5 backdrop-blur-sm rounded-xl shadow-md p-6 border border-white/10">
+        <h3 className="text-xl font-bold mb-4 text-white">热门标签</h3>
+        <div className="flex flex-wrap gap-2">
+          {['React', 'JavaScript', 'CSS', 'Tailwind', 'Vue', 'Angular', 'Node.js', 'Python', '设计', '生活'].map((tag, index) => (
             <Link 
-              key={post.id}
-              to={`/post/${post.id}`}
-              className="flex items-center group"
+              key={index}
+              to="#"
+              className="px-3 py-1 bg-white/15 hover:bg-white/25 text-white text-sm rounded-full transition-colors duration-200"
             >
-              <div className="relative w-16 h-16 flex-shrink-0 mr-4">
-                <div className="absolute inset-0 bg-gray-200 animate-pulse rounded"></div>
-                <img 
-                  src={post.image} 
-                  alt={post.title} 
-                  className="w-full h-full object-cover rounded"
-                  onLoad={(e) => {
-                    // 隐藏占位符
-                    e.target.previousElementSibling.style.display = 'none';
-                  }}
-                />
-              </div>
-              <div>
-                <h4 className="text-white font-medium group-hover:text-blue-200 transition-colors line-clamp-2">
-                  {post.title}
-                </h4>
-                <p className="text-white/70 text-sm mt-1">{post.date}</p>
-              </div>
+              {tag}
             </Link>
           ))}
         </div>
-      </div>
-      
-      {/* 订阅表单 */} 
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl shadow-md p-6 border border-white/20">
-        <h3 className="text-xl font-bold mb-4 text-white">订阅更新</h3>
-        <p className="text-white/80 mb-4 text-sm">
-          获取最新的文章和独家内容
-        </p>
-        <SubscribeForm 
-          inputPlaceholder="您的邮箱地址"
-          buttonText="订阅"
-          className="space-y-3"
-        />
       </div>
     </div>
   );
