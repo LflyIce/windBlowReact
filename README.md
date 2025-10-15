@@ -2,7 +2,8 @@
 
 一个现代化、响应式的个人博客网站实现，基于 React 和 Tailwind CSS 构建，具有优雅的 UI 设计和流畅的用户体验。
 
-![项目预览](/imgs/featured.jpg)
+![项目预览](/imgs/Preview/preview1.png)
+![项目预览](/imgs/Preview/preview2.png)
 
 ## 目录
 
@@ -132,14 +133,3 @@ yarn build
 - Firefox (最新2个版本)
 - Safari (最新2个版本)
 - Edge (最新2个版本)
-
-## 许可证
-
-本项目采用 [木兰宽松许可证，第2版](LICENSE) 授权。
-
-```
-木兰宽松许可证，第2版
-
-您对"软件"的复制、使用、修改及分发受木兰宽松许可证，第2版（"本许可证"）的如下条款的约束：
-...
-```
