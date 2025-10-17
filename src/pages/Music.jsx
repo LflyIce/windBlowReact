@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Heart, Share2, Music, X, List, ChevronLeft, ChevronRight } from 'react-feather';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Heart, Share2, Music, X, List } from 'react-feather';
 
 // 粒子背景组件
 const ParticleBackground = ({ isPlaying }) => {
@@ -102,7 +102,7 @@ const ParticleBackground = ({ isPlaying }) => {
   return (
     <canvas 
       ref={canvasRef} 
-      className="fixed top-0 left-0 w-full h-full pointer-events-none z-0"
+      className="fixed top-0 left-0 w-full h-full pointer-events-none z-[-1]"
     />
   );
 };
@@ -113,40 +113,25 @@ const MusicPlayer = () => {
   const [currentSong, setCurrentSong] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [currentLyricIndex, setCurrentLyricIndex] = useState(-1);
   const [showVisualizer, setShowVisualizer] = useState(true);
-  const [activePanel, setActivePanel] = useState('none'); // 'lyrics', 'playlist', 'none'
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+  const [activePanel, setActivePanel] = useState('playlist'); // 'lyrics', 'playlist', 'none'
+  const [currentLyricIndex, setCurrentLyricIndex] = useState(-1); // 当前歌词索引
+
   // 引用
   const audioRef = useRef(null);
-  const progressRef = useRef(null);
   const lyricsContainerRef = useRef(null);
   const canvasRef = useRef(null);
   const animationFrameRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const sourceRef = useRef(null);
-  const playerRef = useRef(null);
-  const panelRef = useRef(null);
 
   // 音乐列表数据
-  const songs = [
+  const songs = useMemo(() => [
     {
       id: 1,
-      title: "打火机",
-      artist: "Penny",
-      album: "打火机",
-      duration: "2:33",
-      cover: "https://picsum.photos/seed/album1/600/600",
-      url: "/audio/yequ.mp3",
-      color: ["#ff4ecd", "#a855f7"] // 专辑主题色 - 粉色到紫色渐变
-    },
-    {
-      id: 2,
       title: "爱错",
       artist: "王力宏",
       album: "恋爱占星音乐全精选",
@@ -156,147 +141,88 @@ const MusicPlayer = () => {
       color: ["#38bdf8", "#0ea5e9"] // 专辑主题色 - 亮蓝到深蓝渐变
     },
     {
+      id: 2,
+      title: "SoundHelix Song 2",
+      artist: "SoundHelix",
+      album: "Demo Album",
+      duration: "3:58",
+      cover: "https://picsum.photos/seed/album2/600/600",
+      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+      color: ["#38bdf8", "#0ea5e9"] // 专辑主题色 - 亮蓝到深蓝渐变
+    },
+    {
       id: 3,
-      title: "星空",
-      artist: "五月天",
-      album: "第二人生",
+      title: "SoundHelix Song 3",
+      artist: "SoundHelix",
+      album: "Demo Album",
       duration: "4:45",
       cover: "https://picsum.photos/seed/album3/600/600",
-      url: "/audio/xingkong.mp3",
+      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
       color: ["#f97316", "#ea580c"] // 专辑主题色 - 亮橙到深橙渐变
     },
     {
       id: 4,
-      title: "小幸运",
-      artist: "田馥甄",
-      album: "我的少女时代 电影原声带",
+      title: "SoundHelix Song 4",
+      artist: "SoundHelix",
+      album: "Demo Album",
       duration: "3:35",
       cover: "https://picsum.photos/seed/album4/600/600",
-      url: "/audio/xiaoxingyun.mp3",
+      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
       color: ["#818cf8", "#6366f1"] // 专辑主题色 - 浅紫到靛蓝渐变
     }
-  ];
-
-  // 歌词数据
-  const lyrics = {
-    1: [
-      { time: 0, text: "打火机 - Penny" },
-      { time: 10, text: "风 吹过 你的侧脸" },
-      { time: 15, text: "带着一点 无奈的疲倦" },
-      { time: 20, text: "我 沉默 站在你身边" },
-      { time: 25, text: "看着远方 灰色的天" },
-      { time: 30, text: "我们都太倔强" },
-      { time: 35, text: "谁都不愿意先放" },
-      { time: 40, text: "用沉默 代替了体谅" },
-      { time: 45, text: "爱 像风中的打火机" },
-      { time: 50, text: "火苗颤抖 快要熄灭" },
-      { time: 55, text: "心 还在 原地盘旋" },
-      { time: 60, text: "等一个 不可能的 明天" },
-      { time: 65, text: "我们都太好强" },
-      { time: 70, text: "谁都不肯先说原谅" },
-      { time: 75, text: "用冷战 消耗了过往" },
-      { time: 80, text: "爱 像风中的打火机" },
-      { time: 85, text: "火苗颤抖 快要熄灭" },
-      { time: 90, text: "心 还在 原地盘旋" },
-      { time: 95, text: "等一个 不可能的 明天" },
-      { time: 100, text: "爱 像风中的打火机" },
-      { time: 105, text: "最后一点 微弱的光" },
-      { time: 110, text: "梦 早已 灰飞烟灭" },
-      { time: 115, text: "只剩下 回忆在 蔓延" },
-      { time: 120, text: "只剩下 回忆在 蔓延" },
-    ],
-    2: [
-      { time: 0, text: "爱错 - 王力宏" },
-      { time: 15, text: "北风毫不留情 把叶子吹落" },
-      { time: 20, text: "脆弱的她选择了逃脱" },
-      { time: 25, text: "叶子失去消息 风才感觉寂寞" },
-      { time: 30, text: "整个冬天 北风的痛 没人能说" },
-      { time: 35, text: "我从来没想过 我会这样做" },
-      { time: 40, text: "从来没想过 如此的难过" },
-      { time: 45, text: "反复回想 过去的我 现在的你 失去了什么" },
-      { time: 50, text: "我安静的提醒自己 不要哭泣" },
-      { time: 55, text: "我从来没想过 我会这样做" },
-      { time: 60, text: "从来没想过 如此的难过" },
-      { time: 65, text: "反复回想 过去的我 现在的你 失去了什么" },
-      { time: 70, text: "我安静的提醒自己 不要哭泣" },
-      { time: 75, text: "冰冷的空气 穿透我的身体" },
-      { time: 80, text: "冰冻我的心" },
-      { time: 85, text: "曾经的约定 浮现出回忆" },
-      { time: 90, text: "差点 温暖了我的心" },
-      { time: 95, text: "请原谅我 爱错" },
-    ]
-  };
+  ], []);
 
   // 格式化时间
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  const formatTime = (time) => {
+    if (isNaN(time) || time === undefined || time === null) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
-
-  // 处理音频进度更新
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime);
-      setProgress((audio.currentTime / audio.duration) * 100 || 0);
-    };
-
-    const handleLoadedMetadata = () => {
-      setDuration(audio.duration);
-    };
-
-    const handleEnded = () => {
-      playNext();
-    };
-
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('ended', handleEnded);
-
-    return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('ended', handleEnded);
-    };
+  
+  // 处理进度条拖拽
+  const handleSeek = (e) => {
+    const newTime = parseFloat(e.target.value);
+    setCurrentTime(newTime);
+    
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+    }
+  };
+  
+  // 音频时间更新
+  const handleTimeUpdate = useCallback(() => {
+    if (audioRef.current) {
+      const newTime = audioRef.current.currentTime;
+      setCurrentTime(newTime);
+      console.log("音频时间更新:", newTime); // 临时添加日志以便调试
+    }
   }, []);
 
-  // 切换播放/暂停
-  const togglePlay = useCallback(async () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    
-    try {
-      if (isPlaying) {
-        await audio.pause();
-        setIsPlaying(false);
-      } else {
-        // 确保音频上下文已准备好
-        if (!audioContextRef.current) {
-          setupVisualizer();
-        } else if (audioContextRef.current.state === 'suspended') {
-          await audioContextRef.current.resume();
-        }
-        
-        await audio.play();
-        setIsPlaying(true);
-      }
-    } catch (err) {
-      console.log("播放控制错误:", err);
-      setIsPlaying(false);
+  // 音频加载元数据
+  const handleLoadedMetadata = useCallback(() => {
+    if (audioRef.current) {
+      const dur = audioRef.current.duration;
+      setDuration(dur);
+      console.log("音频元数据加载完成，时长:", dur);
     }
-  }, [isPlaying]);
+  }, []);
+
+  // 音频错误处理
+  const handleError = useCallback((e) => {
+    console.error("音频播放错误:", e);
+    setIsPlaying(false);
+  }, []);
+
+  // 音频可播放
+  const handleCanPlay = useCallback(() => {
+    console.log("音频可以播放");
+  }, []);
 
   // 播放指定歌曲
   const playSong = useCallback(async (index) => {
-    // 清理之前的音频连接
-    cleanupAudio();
-    
     setCurrentSong(index);
     setCurrentLyricIndex(-1);
-    setProgress(0);
     
     const audio = audioRef.current;
     if (!audio) return;
@@ -309,7 +235,14 @@ const MusicPlayer = () => {
       setIsPlaying(true);
       
       // 初始化可视化
-      setupVisualizer();
+      if (!sourceRef.current) {
+        // 延迟调用确保函数已完全初始化
+        setTimeout(() => {
+          setupVisualizer();
+        }, 0);
+      } else if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
     } catch (error) {
       console.log("播放歌曲失败:", error);
       setIsPlaying(false);
@@ -322,25 +255,60 @@ const MusicPlayer = () => {
     playSong(newIndex);
   };
 
-  const playNext = () => {
+  const playNext = useCallback(() => {
     const newIndex = currentSong === songs.length - 1 ? 0 : currentSong + 1;
     playSong(newIndex);
-  };
+  }, [currentSong, songs, playSong]);
 
-  // 更新进度条
-  const updateProgress = (e) => {
+  // 音频播放结束
+  const handleEnded = useCallback(() => {
+    playNext();
+  }, [playNext]);
+
+  // 处理音频进度更新
+  useEffect(() => {
     const audio = audioRef.current;
-    const progressBar = progressRef.current;
-    
-    if (!audio || !progressBar) return;
-    
-    const clickPosition = e.nativeEvent.offsetX;
-    const progressBarWidth = progressBar.offsetWidth;
-    const newProgress = (clickPosition / progressBarWidth) * 100;
-    const newTime = (newProgress / 100) * (audio.duration || duration);
-    
-    setProgress(newProgress);
-    audio.currentTime = newTime;
+    if (!audio) return;
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
+    audio.addEventListener('canplay', handleCanPlay);
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
+      audio.removeEventListener('canplay', handleCanPlay);
+    };
+  }, [handleTimeUpdate, handleLoadedMetadata, handleEnded, handleError, handleCanPlay]);
+
+  // 播放/暂停切换
+  const togglePlay = () => {
+    console.log("切换播放状态，当前状态:", isPlaying);
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        console.log("音频已暂停");
+      } else {
+        // 尝试播放音频
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              // 音频播放成功
+              console.log("音频播放成功");
+            })
+            .catch((error) => {
+              // 自动播放失败，可能需要用户交互
+              console.error("音频播放失败:", error);
+            });
+        }
+      }
+      setIsPlaying(!isPlaying);
+    }
   };
 
   // 音量控制
@@ -363,56 +331,6 @@ const MusicPlayer = () => {
     audio.volume = isMuted ? volume : 0;
   };
 
-  // 歌词滚动逻辑
-  const handleLyricsScroll = useCallback(() => {
-    const currentLyrics = lyrics[songs[currentSong].id] || [];
-    if (currentLyrics.length === 0) return;
-    
-    // 找到当前时间对应的歌词索引
-    let newIndex = currentLyricIndex;
-    for (let i = 0; i < currentLyrics.length; i++) {
-      if (currentTime >= currentLyrics[i].time && 
-          (i === currentLyrics.length - 1 || currentTime < currentLyrics[i + 1].time)) {
-        newIndex = i;
-        break;
-      }
-    }
-    
-    if (newIndex !== currentLyricIndex) {
-      setCurrentLyricIndex(newIndex);
-      
-      // 平滑滚动到当前歌词
-      const lyricsContainer = lyricsContainerRef.current;
-      const activeLyric = document.querySelector('.lyric-item.active');
-      
-      if (lyricsContainer && activeLyric) {
-        const containerRect = lyricsContainer.getBoundingClientRect();
-        const lyricRect = activeLyric.getBoundingClientRect();
-        const offset = lyricRect.top - containerRect.top - containerRect.height / 2 + lyricRect.height / 2;
-        
-        // 平滑滚动动画
-        const scrollToPosition = lyricsContainer.scrollTop + offset;
-        const startPosition = lyricsContainer.scrollTop;
-        const distance = scrollToPosition - startPosition;
-        const duration = 300;
-        let startTime = null;
-        
-        const scrollAnimation = (timestamp) => {
-          if (!startTime) startTime = timestamp;
-          const progress = Math.min((timestamp - startTime) / duration, 1);
-          // 使用easeOutQuad缓动函数
-          const easeProgress = 1 - (1 - progress) * (1 - progress);
-          lyricsContainer.scrollTop = startPosition + distance * easeProgress;
-          
-          if (progress < 1) {
-            requestAnimationFrame(scrollAnimation);
-          }
-        };
-        
-        requestAnimationFrame(scrollAnimation);
-      }
-    }
-  }, [currentTime, currentLyricIndex, currentSong, songs]);
 
   // 清理音频上下文
   const cleanupAudio = useCallback(() => {
@@ -452,11 +370,7 @@ const MusicPlayer = () => {
     if (!audio || !canvas) return;
     
     // 恢复或创建音频上下文
-    if (audioContextRef.current) {
-      if (audioContextRef.current.state === 'suspended') {
-        audioContextRef.current.resume();
-      }
-    } else {
+    if (!audioContextRef.current) {
       try {
         audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
       } catch (error) {
@@ -466,13 +380,18 @@ const MusicPlayer = () => {
       }
     }
     
+    // 如果音频上下文被挂起，则恢复它
+    if (audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+    
     // 创建分析器
     if (!analyserRef.current) {
       analyserRef.current = audioContextRef.current.createAnalyser();
       analyserRef.current.fftSize = 512; // 增加FFT大小以获得更详细的频谱
     }
     
-    // 创建源节点并连接
+    // 创建源节点并连接（如果尚未连接）
     if (!sourceRef.current) {
       sourceRef.current = audioContextRef.current.createMediaElementSource(audio);
       sourceRef.current.connect(analyserRef.current);
@@ -563,12 +482,111 @@ const MusicPlayer = () => {
     };
     
     renderFrame();
-  }, [isPlaying, showVisualizer, currentSong, songs]);
+  }, [isPlaying, showVisualizer, songs, currentSong]);
+
+  // 歌词滚动逻辑
+  const handleLyricsScroll = useCallback(() => {
+    // 歌词数据
+    const lyrics = {
+      1: [
+        { time: 0, text: "SoundHelix Song 1" },
+        { time: 10, text: "This is a sample lyric line" },
+        { time: 20, text: "Another line of lyrics" },
+        { time: 30, text: "More lyrics for demonstration" },
+        { time: 40, text: "Lyrics keep appearing" },
+        { time: 50, text: "As the song plays" },
+        { time: 60, text: "Time passes by" },
+        { time: 70, text: "And lyrics change" },
+        { time: 80, text: "Just like this one" },
+        { time: 90, text: "And this one too" },
+      ],
+      2: [
+        { time: 0, text: "SoundHelix Song 2" },
+        { time: 15, text: "This is a different song" },
+        { time: 25, text: "With different lyrics" },
+        { time: 35, text: "Each song has its own" },
+        { time: 45, text: "Set of lyrics" },
+        { time: 55, text: "To display" },
+        { time: 65, text: "As it plays" },
+        { time: 75, text: "In the music player" },
+        { time: 85, text: "On the right panel" },
+        { time: 95, text: "Or on mobile devices" },
+      ],
+      3: [
+        { time: 0, text: "SoundHelix Song 3" },
+        { time: 12, text: "Yet another song" },
+        { time: 22, text: "With more lyrics" },
+        { time: 32, text: "To show how" },
+        { time: 42, text: "The lyrics panel works" },
+        { time: 52, text: "With multiple songs" },
+        { time: 62, text: "And their lyrics" },
+        { time: 72, text: "All in one place" },
+        { time: 82, text: "For the user" },
+        { time: 92, text: "To enjoy" },
+      ],
+      4: [
+        { time: 0, text: "SoundHelix Song 4" },
+        { time: 18, text: "The final demo song" },
+        { time: 28, text: "In this music player" },
+        { time: 38, text: "Shows how lyrics" },
+        { time: 48, text: "Are displayed" },
+        { time: 58, text: "In the panel" },
+        { time: 68, text: "On the right" },
+        { time: 78, text: "On desktop" },
+        { time: 88, text: "And can be toggled" },
+        { time: 98, text: "On mobile" },
+      ]
+    };
+    
+    const currentLyrics = lyrics[songs[currentSong].id] || [];
+    if (currentLyrics.length === 0) return;
+    
+    // 找到当前时间对应的歌词索引
+    let newIndex = -1;
+    for (let i = 0; i < currentLyrics.length; i++) {
+      if (currentTime >= currentLyrics[i].time && 
+          (i === currentLyrics.length - 1 || currentTime < currentLyrics[i + 1].time)) {
+        newIndex = i;
+        break;
+      }
+    }
+    
+    console.log("计算歌词索引:", newIndex, "当前时间:", currentTime);
+    
+    // 只有当索引真正改变时才更新状态
+    if (newIndex !== currentLyricIndex && newIndex !== -1) {
+      console.log("更新歌词索引:", currentLyricIndex, "->", newIndex);
+      setCurrentLyricIndex(newIndex);
+    }
+    
+    // 平滑滚动到当前歌词
+    const lyricsContainer = lyricsContainerRef.current;
+    if (lyricsContainer && newIndex >= 0) {
+      const lyricElements = lyricsContainer.querySelectorAll('.lyric-item');
+      const activeLyric = lyricElements[newIndex];
+      
+      if (activeLyric) {
+        const containerHeight = lyricsContainer.clientHeight;
+        const lyricHeight = activeLyric.offsetHeight;
+        const lyricTop = activeLyric.offsetTop;
+        
+        // 计算滚动位置，使当前歌词居中
+        const scrollPosition = lyricTop - (containerHeight / 2) + (lyricHeight / 2);
+        
+        // 使用smooth滚动实现平滑效果
+        lyricsContainer.scrollTo({
+          top: scrollPosition,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [currentTime, currentLyricIndex, currentSong, songs]);
 
   // 歌词更新
   useEffect(() => {
+    console.log("歌词更新 - 当前时间:", currentTime, "当前歌词索引:", currentLyricIndex);
     handleLyricsScroll();
-  }, [currentTime, handleLyricsScroll]);
+  }, [currentTime, currentLyricIndex, handleLyricsScroll]);
 
   // 调整canvas大小
   useEffect(() => {
@@ -591,6 +609,24 @@ const MusicPlayer = () => {
     };
   }, []);
 
+  // 处理窗口大小变化时的面板显示
+  useEffect(() => {
+    const handleResize = () => {
+      const isDesktop = window.innerWidth >= 1024; // lg breakpoint
+      // 如果是桌面端且面板处于隐藏状态，则默认显示播放列表
+      if (isDesktop && activePanel === 'none') {
+        setActivePanel('playlist');
+      }
+    };
+
+    handleResize(); // 初始化检查
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [activePanel]);
+
   // 组件卸载时清理
   useEffect(() => {
     return () => {
@@ -601,19 +637,33 @@ const MusicPlayer = () => {
     };
   }, [cleanupAudio]);
 
+  // 当播放状态改变时，确保可视化正确运行
+  useEffect(() => {
+    if (isPlaying && showVisualizer) {
+      // 延迟调用确保函数已完全初始化
+      setTimeout(() => {
+        setupVisualizer();
+      }, 0);
+    }
+  }, [isPlaying, showVisualizer, setupVisualizer]);
+
   // 切换面板显示
   const togglePanel = (panel) => {
+    console.log("切换面板到:", panel, "当前面板:", activePanel);
     if (activePanel === panel) {
       setActivePanel('none');
     } else {
       setActivePanel(panel);
     }
-    setIsMobileMenuOpen(false);
   };
 
   // 获取当前歌曲的主题色
   const [primaryColor, secondaryColor] = songs[currentSong].color;
   
+  // 添加缺失的ref
+  const playerRef = useRef(null);
+  const panelRef = useRef(null);
+
   return (
     <div 
       ref={playerRef}
@@ -622,68 +672,8 @@ const MusicPlayer = () => {
       {/* 动态粒子背景 */}
       <ParticleBackground isPlaying={isPlaying} />
       
-      {/* 顶部导航栏 - 确保不会被遮挡 */}
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg bg-black/30 px-6 py-4 flex justify-between items-center border-b border-white/10">
-        <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 flex items-center gap-2">
-          <Music size={24} />
-          <span>音乐空间</span>
-        </div>
-        <div className="flex items-center gap-4">
-          {/* 桌面端面板切换按钮 */}
-          <div className="hidden md:flex items-center gap-2">
-            <button 
-              onClick={() => togglePanel('lyrics')}
-              className={`px-3 py-1.5 rounded-full text-sm transition-all ${
-                activePanel === 'lyrics' 
-                  ? `bg-gradient-to-r from-${primaryColor} to-${secondaryColor} text-white`
-                  : 'bg-white/10 hover:bg-white/20'
-              }`}
-            >
-              歌词
-            </button>
-            <button 
-              onClick={() => togglePanel('playlist')}
-              className={`px-3 py-1.5 rounded-full text-sm transition-all ${
-                activePanel === 'playlist' 
-                  ? `bg-gradient-to-r from-${primaryColor} to-${secondaryColor} text-white`
-                  : 'bg-white/10 hover:bg-white/20'
-              }`}
-            >
-              播放列表
-            </button>
-          </div>
-          
-          {/* 移动端菜单按钮 */}
-          <button 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 rounded-full hover:bg-white/10 transition-all md:hidden"
-            aria-label="菜单"
-          >
-            {isMobileMenuOpen ? <X size={20} /> : <List size={20} />}
-          </button>
-        </div>
-        
-        {/* 移动端菜单 */}
-        {isMobileMenuOpen && (
-          <div className="absolute top-full right-0 mt-2 w-48 rounded-lg shadow-xl backdrop-blur-lg bg-black/60 border border-white/10 py-2 md:hidden z-50 animate-fadeIn">
-            <button 
-              onClick={() => togglePanel('lyrics')}
-              className="w-full text-left px-4 py-2 hover:bg-white/10 transition-colors flex items-center gap-2"
-            >
-              <Music size={18} /> 歌词
-            </button>
-            <button 
-              onClick={() => togglePanel('playlist')}
-              className="w-full text-left px-4 py-2 hover:bg-white/10 transition-colors flex items-center gap-2"
-            >
-              <List size={18} /> 播放列表
-            </button>
-          </div>
-        )}
-      </header>
-
-      {/* 主内容区 - 从导航栏下方开始，避免遮挡 */}
-      <main className="container mx-auto px-4 pt-24 pb-20 relative z-10">
+      {/* 主内容区 */}
+      <main className="container mx-auto px-4 pt-8 pb-20 relative z-10">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* 中央主播放区 */}
           <div className="lg:w-3/5 mx-auto lg:mx-0">
@@ -737,7 +727,7 @@ const MusicPlayer = () => {
               {/* 增强版音频可视化 */}
               {showVisualizer && (
                 <div 
-                  className="mb-8 rounded-xl overflow-hidden p-2 transform transition-all duration-300 hover:shadow-lg"
+                  className="mb-8 rounded-xl overflow-hidden p-2 transform transition-all duration-300 hover:shadow-lg relative z-0"
                   style={{ 
                     background: `rgba(255, 255, 255, 0.03)`,
                     boxShadow: `0 0 20px ${primaryColor}10`
@@ -746,42 +736,122 @@ const MusicPlayer = () => {
                   <canvas ref={canvasRef} className="w-full h-36 rounded-lg"></canvas>
                 </div>
               )}
-
-              {/* 进度条 */}
-              <div className="mb-8">
-                <div className="flex justify-between text-sm text-white/70 mb-2">
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(duration)}</span>
-                </div>
+              
+              {/* 歌词面板 */}
+              {activePanel === 'lyrics' && (
                 <div 
-                  className="h-2 rounded-full cursor-pointer group relative overflow-hidden"
-                  style={{ background: `rgba(255, 255, 255, 0.1)` }}
-                  onClick={updateProgress}
-                  ref={progressRef}
+                  ref={lyricsContainerRef}
+                  className="h-full overflow-y-auto pr-2 scrollbar-thin flex flex-col justify-start py-10"
+                  style={{
+                    scrollbarColor: `${primaryColor} transparent`,
+                  }}
                 >
-                  <div 
-                    className="h-full relative transition-all duration-200"
-                    style={{ 
-                      width: `${progress}%`,
-                      background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`
-                    }}
-                  >
-                    <div 
-                      className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-110"
-                      style={{ 
-                        background: 'white',
-                        boxShadow: `0 0 10px ${primaryColor}`
-                      }}
-                    ></div>
-                    {/* 进度条发光效果 */}
-                    <div 
-                      className="absolute top-0 left-0 right-0 bottom-0 blur-md opacity-70"
-                      style={{ 
-                        background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`
-                      }}
-                    ></div>
+                  <div className="flex flex-col items-center space-y-6">
+                    {(() => {
+                      console.log("渲染歌词面板，当前歌曲ID:", songs[currentSong].id);
+                      // 歌词数据
+                      const lyrics = {
+                        1: [
+                          { time: 0, text: "SoundHelix Song 1" },
+                          { time: 10, text: "This is a sample lyric line" },
+                          { time: 20, text: "Another line of lyrics" },
+                          { time: 30, text: "More lyrics for demonstration" },
+                          { time: 40, text: "Lyrics keep appearing" },
+                          { time: 50, text: "As the song plays" },
+                          { time: 60, text: "Time passes by" },
+                          { time: 70, text: "And lyrics change" },
+                          { time: 80, text: "Just like this one" },
+                          { time: 90, text: "And this one too" },
+                        ],
+                        2: [
+                          { time: 0, text: "SoundHelix Song 2" },
+                          { time: 15, text: "This is a different song" },
+                          { time: 25, text: "With different lyrics" },
+                          { time: 35, text: "Each song has its own" },
+                          { time: 45, text: "Set of lyrics" },
+                          { time: 55, text: "To display" },
+                          { time: 65, text: "As it plays" },
+                          { time: 75, text: "In the music player" },
+                          { time: 85, text: "On the right panel" },
+                          { time: 95, text: "Or on mobile devices" },
+                        ],
+                        3: [
+                          { time: 0, text: "SoundHelix Song 3" },
+                          { time: 12, text: "Yet another song" },
+                          { time: 22, text: "With more lyrics" },
+                          { time: 32, text: "To show how" },
+                          { time: 42, text: "The lyrics panel works" },
+                          { time: 52, text: "With multiple songs" },
+                          { time: 62, text: "And their lyrics" },
+                          { time: 72, text: "All in one place" },
+                          { time: 82, text: "For the user" },
+                          { time: 92, text: "To enjoy" },
+                        ],
+                        4: [
+                          { time: 0, text: "SoundHelix Song 4" },
+                          { time: 18, text: "The final demo song" },
+                          { time: 28, text: "In this music player" },
+                          { time: 38, text: "Shows how lyrics" },
+                          { time: 48, text: "Are displayed" },
+                          { time: 58, text: "In the panel" },
+                          { time: 68, text: "On the right" },
+                          { time: 78, text: "On desktop" },
+                          { time: 88, text: "And can be toggled" },
+                          { time: 98, text: "On mobile" },
+                        ]
+                      };
+                      
+                      const currentSongLyrics = lyrics[songs[currentSong].id] || [];
+                      console.log("当前歌曲歌词:", currentSongLyrics);
+                      
+                      if (currentSongLyrics.length === 0) {
+                        return (
+                          <div className="text-center py-10">
+                            <p className="text-white/50">暂无歌词111</p>
+                          </div>
+                        );
+                      }
+                      
+                      return currentSongLyrics.map((lyric, index) => (
+                        <div 
+                          key={index}
+                          className={`lyric-item transition-all duration-300 py-4 px-6 rounded-xl transform-gpu ${
+                            index === currentLyricIndex 
+                              ? 'text-2xl font-bold scale-105 opacity-100 active' 
+                              : 'text-lg opacity-50 hover:opacity-90'
+                          }`}
+                          style={{
+                            textShadow: index === currentLyricIndex ? `0 0 20px ${primaryColor}80` : 'none',
+                            color: index === currentLyricIndex ? primaryColor : 'inherit',
+                            transition: 'all 0.3s ease-out'
+                          }}
+                        >
+                          {lyric.text}
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </div>
+              )}
+              {/* 进度条 */}
+              <div className="flex items-center space-x-2 mb-2">
+                <span className="text-xs text-white/70 w-10 text-right">
+                  {formatTime(currentTime)}
+                </span>
+                <input
+                  type="range"
+                  min="0"
+                  max={duration || 100}
+                  value={currentTime}
+                  onChange={handleSeek}
+                  className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+                  }}
+                />
+                <span className="text-xs text-white/70 w-10">
+                  {formatTime(duration)}
+                </span>
               </div>
 
               {/* 主播放控制按钮 */}
@@ -851,10 +921,8 @@ const MusicPlayer = () => {
             ref={panelRef}
             className={`lg:w-2/5 rounded-2xl border border-white/10 shadow-xl backdrop-blur-xl bg-white/5 overflow-hidden transition-all duration-500 ease-in-out z-20 ${
               activePanel === 'none' 
-                ? 'hidden lg:hidden' 
-                : activePanel === 'lyrics'
-                  ? 'block' 
-                  : 'block'
+                ? 'hidden lg:block' 
+                : 'block'
             }`}
             style={{
               boxShadow: `0 0 30px rgba(0, 0, 0, 0.3)`,
@@ -881,80 +949,145 @@ const MusicPlayer = () => {
             </div>
             
             {/* 面板内容 */}
-            <div className="p-4">
-              {activePanel === 'lyrics' ? (
+            <div className="p-4 h-[calc(100vh-180px)] overflow-y-auto">
+              {/* 歌词面板 */}
+              {activePanel === 'lyrics' && (
                 <div 
                   ref={lyricsContainerRef}
-                  className="h-[calc(100vh-220px)] overflow-y-auto pr-2 scrollbar-thin"
+                  className="h-full overflow-y-auto pr-2 scrollbar-thin flex flex-col justify-start py-10"
                   style={{
                     scrollbarColor: `${primaryColor} transparent`,
                   }}
                 >
-                  <div className="flex flex-col items-center justify-center space-y-6 text-center px-4">
-                    {(lyrics[songs[currentSong].id] || []).map((lyric, index) => (
-                      <div 
-                        key={index}
-                        className={`lyric-item transition-all duration-500 py-2 px-4 rounded-lg ${
-                          index === currentLyricIndex 
-                            ? 'scale-110 font-medium opacity-100 active' 
-                            : 'opacity-70 hover:opacity-90'
-                        }`}
-                        style={{
-                          textShadow: index === currentLyricIndex ? `0 0 20px ${primaryColor}80` : 'none',
-                          color: index === currentLyricIndex ? primaryColor : 'inherit'
-                        }}
-                      >
-                        {lyric.text}
-                      </div>
-                    ))}
+                  <div className="flex flex-col items-center space-y-6">
+                    {(() => {
+                      console.log("渲染歌词面板，当前歌曲ID:", songs[currentSong].id);
+                      // 歌词数据
+                      const lyrics = {
+                        1: [
+                          { time: 0, text: "SoundHelix Song 1" },
+                          { time: 10, text: "This is a sample lyric line" },
+                          { time: 20, text: "Another line of lyrics" },
+                          { time: 30, text: "More lyrics for demonstration" },
+                          { time: 40, text: "Lyrics keep appearing" },
+                          { time: 50, text: "As the song plays" },
+                          { time: 60, text: "Time passes by" },
+                          { time: 70, text: "And lyrics change" },
+                          { time: 80, text: "Just like this one" },
+                          { time: 90, text: "And this one too" },
+                        ],
+                        2: [
+                          { time: 0, text: "SoundHelix Song 2" },
+                          { time: 15, text: "This is a different song" },
+                          { time: 25, text: "With different lyrics" },
+                          { time: 35, text: "Each song has its own" },
+                          { time: 45, text: "Set of lyrics" },
+                          { time: 55, text: "To display" },
+                          { time: 65, text: "As it plays" },
+                          { time: 75, text: "In the music player" },
+                          { time: 85, text: "On the right panel" },
+                          { time: 95, text: "Or on mobile devices" },
+                        ],
+                        3: [
+                          { time: 0, text: "SoundHelix Song 3" },
+                          { time: 12, text: "Yet another song" },
+                          { time: 22, text: "With more lyrics" },
+                          { time: 32, text: "To show how" },
+                          { time: 42, text: "The lyrics panel works" },
+                          { time: 52, text: "With multiple songs" },
+                          { time: 62, text: "And their lyrics" },
+                          { time: 72, text: "All in one place" },
+                          { time: 82, text: "For the user" },
+                          { time: 92, text: "To enjoy" },
+                        ],
+                        4: [
+                          { time: 0, text: "SoundHelix Song 4" },
+                          { time: 18, text: "The final demo song" },
+                          { time: 28, text: "In this music player" },
+                          { time: 38, text: "Shows how lyrics" },
+                          { time: 48, text: "Are displayed" },
+                          { time: 58, text: "In the panel" },
+                          { time: 68, text: "On the right" },
+                          { time: 78, text: "On desktop" },
+                          { time: 88, text: "And can be toggled" },
+                          { time: 98, text: "On mobile" },
+                        ]
+                      };
+                      
+                      const currentSongLyrics = lyrics[songs[currentSong].id] || [];
+                      console.log("当前歌曲歌词:", currentSongLyrics);
+                      
+                      if (currentSongLyrics.length === 0) {
+                        return (
+                          <div className="text-center py-10">
+                            <p className="text-white/50">暂无歌词</p>
+                          </div>
+                        );
+                      }
+                      
+                      return currentSongLyrics.map((lyric, index) => (
+                        <div 
+                          key={index}
+                          className={`lyric-item transition-all duration-300 py-4 px-6 rounded-xl transform-gpu ${
+                            index === currentLyricIndex 
+                              ? 'text-2xl font-bold scale-105 opacity-100 active' 
+                              : 'text-lg opacity-50 hover:opacity-90'
+                          }`}
+                          style={{
+                            textShadow: index === currentLyricIndex ? `0 0 20px ${primaryColor}80` : 'none',
+                            color: index === currentLyricIndex ? primaryColor : 'inherit',
+                            transition: 'all 0.3s ease-out'
+                          }}
+                        >
+                          {lyric.text}
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-4 max-h-[calc(100vh-220px)] overflow-y-auto pr-2 scrollbar-thin"
-                  style={{
-                    scrollbarColor: `${primaryColor} transparent`,
-                  }}>
+              )}
+              
+              {/* 播放列表面板 */}
+              {activePanel === 'playlist' && (
+                <div className="space-y-2 max-h-full overflow-y-auto h-full">
                   {songs.map((song, index) => (
                     <div 
                       key={song.id}
-                      className={`flex items-center p-3 rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
+                      className={`flex items-center p-3 rounded-xl transition-all duration-300 cursor-pointer ${
                         index === currentSong 
-                          ? '' 
-                          : 'hover:bg-white/10'
+                          ? 'bg-white/10 scale-[1.02]' 
+                          : 'hover:bg-white/5'
                       }`}
                       style={{
-                        background: index === currentSong 
-                          ? `linear-gradient(90deg, ${song.color[0]}20, ${song.color[1]}20)` 
-                          : 'rgba(255, 255, 255, 0.03)',
-                        border: index === currentSong 
-                          ? `1px solid ${song.color[0]}50` 
-                          : 'none',
                         boxShadow: index === currentSong 
-                          ? `0 4px 20px ${song.color[0]}30` 
+                          ? `0 0 15px ${primaryColor}50` 
                           : 'none'
                       }}
                       onClick={() => playSong(index)}
                     >
                       {/* 专辑封面 */}
-                      <div className="relative w-16 h-16 flex-shrink-0">
+                      <div className="relative">
                         <img 
                           src={song.cover} 
-                          alt={song.title}
-                          className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-500 hover:scale-110"
+                          alt={song.title} 
+                          className="w-12 h-12 rounded-lg object-cover"
                         />
-                        {/* 播放状态指示器 */}
                         {index === currentSong && isPlaying && (
-                          <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
-                            <div className="w-2 h-2 bg-white rounded-full animate-ping mr-2"></div>
-                            <div className="w-2 h-2 bg-white rounded-full animate-ping ml-2" style={{ animationDelay: '0.2s' }}></div>
-                          </div>
+                          <div 
+                            className="absolute inset-0 rounded-lg border-2 border-white/30 animate-ping"
+                            style={{ borderColor: `${primaryColor}50` }}
+                          ></div>
                         )}
                       </div>
                       
                       {/* 歌曲信息 */}
-                      <div className="ml-4 flex-1 min-w-0">
-                        <h3 className="font-bold truncate">{song.title}</h3>
-                        <p className="text-white/70 text-sm truncate">{song.artist}</p>
+                      <div className="ml-3 flex-1 min-w-0">
+                        <h3 className={`font-medium truncate ${
+                          index === currentSong ? 'text-white' : 'text-white/80'
+                        }`}>
+                          {song.title}
+                        </h3>
+                        <p className="text-sm text-white/60 truncate">{song.artist}</p>
                       </div>
                       
                       {/* 时长和操作按钮 */}
@@ -999,7 +1132,10 @@ const MusicPlayer = () => {
             <SkipForward className="h-6 w-6" />
           </button>
           <button 
-            onClick={() => togglePanel('lyrics')}
+            onClick={() => {
+              console.log("点击歌词按钮");
+              togglePanel('lyrics');
+            }}
             className="p-2 hover:bg-white/10 rounded-full transition-all ml-auto"
             aria-label="歌词"
           >
@@ -1019,7 +1155,10 @@ const MusicPlayer = () => {
       <audio 
         ref={audioRef} 
         src={songs[currentSong].url}
-        preload="metadata"
+        preload="auto"
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onEnded={handleEnded}
       />
 
       {/* 全局样式 */}
@@ -1085,6 +1224,30 @@ const MusicPlayer = () => {
         
         .transform-style-3d {
           transform-style: preserve-3d;
+        }
+        
+        /* 歌词面板滚动条样式 */
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #ff4ecd, #a855f7);
+          border-radius: 10px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, #a855f7, #ff4ecd);
+        }
+        
+        /* 歌词项动画 */
+        .lyric-item {
+          will-change: transform, opacity, color;
         }
       `}</style>
     </div>

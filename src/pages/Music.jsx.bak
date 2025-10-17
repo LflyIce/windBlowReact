@@ -1,0 +1,630 @@
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Heart, Share2, Music, X, List, ChevronLeft, ChevronRight } from 'react-feather';
+
+// 粒子背景组件
+const ParticleBackground = ({ isPlaying }) => {
+  const canvasRef = useRef(null);
+  
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let animationFrameId;
+    
+    // 设置canvas尺寸
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // 创建粒子
+    const createParticles = () => {
+      particles = [];
+      const count = isPlaying ? 150 : 80;
+      
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 4 + 1,
+          color: isPlaying 
+            ? `rgba(${255 * Math.random()}, ${150 + Math.random() * 50}, ${255 * Math.random()}, 0.7)`
+            : `rgba(100, 100, 150, 0.2)`,
+          speedX: (Math.random() - 0.5) * (isPlaying ? 3 : 0.8),
+          speedY: (Math.random() - 0.5) * (isPlaying ? 3 : 0.8),
+        });
+      }
+    };
+    
+    // 绘制粒子
+    const drawParticles = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      particles.forEach((particle, index) => {
+        // 更新位置
+        particle.x += particle.speedX;
+        particle.y += particle.speedY;
+        
+        // 边界检查
+        if (particle.x < 0 || particle.x > canvas.width) particle.speedX *= -1;
+        if (particle.y < 0 || particle.y > canvas.height) particle.speedY *= -1;
+        
+        // 绘制粒子
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = particle.color;
+        ctx.fill();
+        
+        // 连接附近的粒子
+        if (isPlaying) {
+          for (let j = index + 1; j < particles.length; j++) {
+            const other = particles[j];
+            const dx = particle.x - other.x;
+            const dy = particle.y - other.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < 120) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(255, 180, 255, ${0.8 - distance/150})`;
+              ctx.lineWidth = 0.7;
+              ctx.moveTo(particle.x, particle.y);
+              ctx.lineTo(other.x, other.y);
+              ctx.stroke();
+            }
+          }
+        }
+      });
+      
+      animationFrameId = requestAnimationFrame(drawParticles);
+    };
+    
+    createParticles();
+    drawParticles();
+    
+    // 当播放状态变化时更新粒子
+    const handlePlayingChange = () => {
+      createParticles();
+    };
+    
+    handlePlayingChange();
+    
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isPlaying]);
+  
+  return (
+    <canvas 
+      ref={canvasRef} 
+      className="fixed top-0 left-0 w-full h-full pointer-events-none z-[-1]"
+    />
+  );
+};
+
+const MusicPlayer = () => {
+  // 状态管理
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentSong, setCurrentSong] = useState(0);
+  const [volume, setVolume] = useState(0.7);
+  const [isMuted, setIsMuted] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [currentLyricIndex, setCurrentLyricIndex] = useState(-1);
+  const [showVisualizer, setShowVisualizer] = useState(true);
+  const [activePanel, setActivePanel] = useState(typeof window !== 'undefined' && window.innerWidth >= 1024 ? 'playlist' : 'none');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // 引用
+  const audioRef = useRef(null);
+  const progressRef = useRef(null);
+  const lyricsContainerRef = useRef(null);
+  const canvasRef = useRef(null);
+  const animationFrameRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const sourceRef = useRef(null);
+  const playerRef = useRef(null);
+  const panelRef = useRef(null);
+
+  // 音乐列表数据
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const songs = [
+    {
+      id: 1,
+      title: "打火机",
+      artist: "Penny",
+      album: "打火机",
+      duration: "2:33",
+      cover: "https://picsum.photos/seed/album1/600/600",
+      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+      color: ["#ff4ecd", "#a855f7"] // 专辑主题色 - 粉色到紫色渐变
+    },
+    {
+      id: 2,
+      title: "爱错",
+      artist: "王力宏",
+      album: "恋爱占星音乐全精选",
+      duration: "3:58",
+      cover: "https://picsum.photos/seed/album2/600/600",
+      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+      color: ["#38bdf8", "#0ea5e9"] // 专辑主题色 - 亮蓝到深蓝渐变
+    },
+    {
+      id: 3,
+      title: "星空",
+      artist: "五月天",
+      album: "第二人生",
+      duration: "4:45",
+      cover: "https://picsum.photos/seed/album3/600/600",
+      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+      color: ["#f97316", "#ea580c"] // 专辑主题色 - 亮橙到深橙渐变
+    },
+    {
+      id: 4,
+      title: "小幸运",
+      artist: "田馥甄",
+      album: "我的少女时代 电影原声带",
+      duration: "3:35",
+      cover: "https://picsum.photos/seed/album4/600/600",
+      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+      color: ["#818cf8", "#6366f1"] // 专辑主题色 - 浅紫到靛蓝渐变
+    }
+  ];
+
+  // 歌词数据
+  const lyrics = {
+    1: [
+      { time: 0, text: "打火机 - Penny" },
+      { time: 10, text: "风 吹过 你的侧脸" },
+      { time: 15, text: "带着一点 无奈的疲倦" },
+      { time: 20, text: "我 沉默 站在你身边" },
+      { time: 25, text: "看着远方 灰色的天" },
+      { time: 30, text: "我们都太倔强" },
+      { time: 35, text: "谁都不愿意先放" },
+      { time: 40, text: "用沉默 代替了体谅" },
+      { time: 45, text: "爱 像风中的打火机" },
+      { time: 50, text: "火苗颤抖 快要熄灭" },
+      { time: 55, text: "心 还在 原地盘旋" },
+      { time: 60, text: "等一个 不可能的 明天" },
+      { time: 65, text: "我们都太好强" },
+      { time: 70, text: "谁都不肯先说原谅" },
+      { time: 75, text: "用冷战 消耗了过往" },
+      { time: 80, text: "爱 像风中的打火机" },
+      { time: 85, text: "火苗颤抖 快要熄灭" },
+      { time: 90, text: "心 还在 原地盘旋" },
+      { time: 95, text: "等一个 不可能的 明天" },
+      { time: 100, text: "爱 像风中的打火机" },
+      { time: 105, text: "最后一点 微弱的光" },
+      { time: 110, text: "梦 早已 灰飞烟灭" },
+      { time: 115, text: "只剩下 回忆在 蔓延" },
+      { time: 120, text: "只剩下 回忆在 蔓延" },
+    ],
+    2: [
+      { time: 0, text: "爱错 - 王力宏" },
+      { time: 15, text: "北风毫不留情 把叶子吹落" },
+      { time: 20, text: "脆弱的她选择了逃脱" },
+      { time: 25, text: "叶子失去消息 风才感觉寂寞" },
+      { time: 30, text: "整个冬天 北风的痛 没人能说" },
+      { time: 35, text: "我从来没想过 我会这样做" },
+      { time: 40, text: "从来没想过 如此的难过" },
+      { time: 45, text: "反复回想 过去的我 现在的你 失去了什么" },
+      { time: 50, text: "我安静的提醒自己 不要哭泣" },
+      { time: 55, text: "我从来没想过 我会这样做" },
+      { time: 60, text: "从来没想过 如此的难过" },
+      { time: 65, text: "反复回想 过去的我 现在的你 失去了什么" },
+      { time: 70, text: "我安静的提醒自己 不要哭泣" },
+      { time: 75, text: "冰冷的空气 穿透我的身体" },
+      { time: 80, text: "冰冻了我的心" },
+      { time: 85, text: "曾经的约定 浮现出回忆" },
+      { time: 90, text: "差点 温暖了我的心" },
+      { time: 95, text: "请原谅我 爱错" },
+    ]
+  };
+
+  // 格式化时间
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  // 处理音频进度更新
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+      setProgress((audio.currentTime / audio.duration) * 100 || 0);
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+    };
+
+    const handleEnded = () => {
+      playNext();
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, []);
+
+  // 切换播放/暂停
+  const togglePlay = useCallback(async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    
+    try {
+      if (isPlaying) {
+        await audio.pause();
+        setIsPlaying(false);
+      } else {
+        // 确保音频上下文已准备好
+        if (!audioContextRef.current) {
+          setupVisualizer();
+        } else if (audioContextRef.current.state === 'suspended') {
+          await audioContextRef.current.resume();
+        }
+        
+        await audio.play();
+        setIsPlaying(true);
+      }
+    } catch (err) {
+      console.log("播放控制错误:", err);
+      setIsPlaying(false);
+    }
+  }, [isPlaying]);
+
+  // 播放指定歌曲
+  const playSong = useCallback(async (index) => {
+    // 清理之前的音频连接
+    cleanupAudio();
+    
+    setCurrentSong(index);
+    setCurrentLyricIndex(-1);
+    setProgress(0);
+    
+    const audio = audioRef.current;
+    if (!audio) return;
+    
+    try {
+      // 加载并播放新歌曲
+      audio.src = songs[index].url;
+      await audio.load();
+      await audio.play();
+      setIsPlaying(true);
+      
+      // 初始化可视化
+      setupVisualizer();
+    } catch (error) {
+      console.log("播放歌曲失败:", error);
+      setIsPlaying(false);
+    }
+  }, [songs]);
+
+  // 上一首/下一首
+  const playPrevious = () => {
+    const newIndex = currentSong === 0 ? songs.length - 1 : currentSong - 1;
+    playSong(newIndex);
+  };
+
+  const playNext = () => {
+    const newIndex = currentSong === songs.length - 1 ? 0 : currentSong + 1;
+    playSong(newIndex);
+  };
+
+  // 更新进度条
+  const updateProgress = (e) => {
+    const audio = audioRef.current;
+    const progressBar = progressRef.current;
+    
+    if (!audio || !progressBar) return;
+    
+    const clickPosition = e.nativeEvent.offsetX;
+    const progressBarWidth = progressBar.offsetWidth;
+    const newProgress = (clickPosition / progressBarWidth) * 100;
+    const newTime = (newProgress / 100) * (audio.duration || duration);
+    
+    setProgress(newProgress);
+    audio.currentTime = newTime;
+  };
+
+  // 音量控制
+  const updateVolume = (e) => {
+    const newVolume = e.target.value / 100;
+    setVolume(newVolume);
+    setIsMuted(newVolume === 0);
+    
+    const audio = audioRef.current;
+    if (audio) {
+      audio.volume = newVolume;
+    }
+  };
+
+  const toggleMute = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    
+    setIsMuted(!isMuted);
+    audio.volume = isMuted ? volume : 0;
+  };
+
+  // 歌词滚动逻辑
+  const handleLyricsScroll = useCallback(() => {
+    const currentLyrics = lyrics[songs[currentSong].id] || [];
+    if (currentLyrics.length === 0) return;
+    
+    // 找到当前时间对应的歌词索引
+    let newIndex = currentLyricIndex;
+    for (let i = 0; i < currentLyrics.length; i++) {
+      if (currentTime >= currentLyrics[i].time && 
+          (i === currentLyrics.length - 1 || currentTime < currentLyrics[i + 1].time)) {
+        newIndex = i;
+        break;
+      }
+    }
+    
+    if (newIndex !== currentLyricIndex) {
+      setCurrentLyricIndex(newIndex);
+      
+      // 平滑滚动到当前歌词
+      const lyricsContainer = lyricsContainerRef.current;
+      const activeLyric = document.querySelector('.lyric-item.active');
+      
+      if (lyricsContainer && activeLyric) {
+        const containerRect = lyricsContainer.getBoundingClientRect();
+        const lyricRect = activeLyric.getBoundingClientRect();
+        const offset = lyricRect.top - containerRect.top - containerRect.height / 2 + lyricRect.height / 2;
+        
+        // 平滑滚动动画
+        const scrollToPosition = lyricsContainer.scrollTop + offset;
+        const startPosition = lyricsContainer.scrollTop;
+        const distance = scrollToPosition - startPosition;
+        const duration = 300;
+        let startTime = null;
+        
+        const scrollAnimation = (timestamp) => {
+          if (!startTime) startTime = timestamp;
+          const progress = Math.min((timestamp - startTime) / duration, 1);
+          // 使用easeOutQuad缓动函数
+          const easeProgress = 1 - (1 - progress) * (1 - progress);
+          lyricsContainer.scrollTop = startPosition + distance * easeProgress;
+          
+          if (progress < 1) {
+            requestAnimationFrame(scrollAnimation);
+          }
+        };
+        
+        requestAnimationFrame(scrollAnimation);
+      }
+    }
+  }, [currentTime, currentLyricIndex, currentSong, songs]);
+
+  // 清理音频上下文
+  const cleanupAudio = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    
+    if (sourceRef.current) {
+      try {
+        sourceRef.current.disconnect();
+      } catch (e) {
+        console.log("断开 source 连接:", e);
+      }
+      sourceRef.current = null;
+    }
+    
+    if (analyserRef.current) {
+      analyserRef.current = null;
+    }
+    
+    if (audioContextRef.current) {
+      try {
+        if (audioContextRef.current.state !== 'closed') {
+          audioContextRef.current.suspend();
+        }
+      } catch (e) {
+        console.log("暂停 audioContext:", e);
+      }
+    }
+  }, []);
+
+  // 高级音频可视化
+  const setupVisualizer = useCallback(() => {
+    const audio = audioRef.current;
+    const canvas = canvasRef.current;
+    if (!audio || !canvas) return;
+    
+    // 恢复或创建音频上下文
+    if (audioContextRef.current) {
+      if (audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
+      }
+    } else {
+      try {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (error) {
+        console.error("创建 AudioContext 失败:", error);
+        setShowVisualizer(false);
+        return;
+      }
+    }
+    
+    // 创建分析器
+    if (!analyserRef.current) {
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      analyserRef.current.fftSize = 512; // 增加FFT大小以获得更详细的频谱
+    }
+    
+    // 创建源节点并连接
+    if (!sourceRef.current) {
+      sourceRef.current = audioContextRef.current.createMediaElementSource(audio);
+      sourceRef.current.connect(analyserRef.current);
+      analyserRef.current.connect(audioContextRef.current.destination);
+    }
+    
+    const bufferLength = analyserRef.current.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    const barWidth = canvas.width / bufferLength * 2.5;
+    
+    // 可视化渲染
+    const renderFrame = () => {
+      if (!showVisualizer || !isPlaying || !audioContextRef.current) {
+        animationFrameRef.current = requestAnimationFrame(renderFrame);
+        return;
+      }
+      
+      animationFrameRef.current = requestAnimationFrame(renderFrame);
+      analyserRef.current.getByteFrequencyData(dataArray);
+      
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // 获取当前歌曲的主题色
+      const [color1, color2] = songs[currentSong].color;
+      
+      // 绘制频谱柱状图
+      let x = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        const barHeight = (dataArray[i] / 255) * canvas.height;
+        
+        // 创建随频率变化的渐变
+        const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(1, color2);
+        
+        // 添加发光效果
+        ctx.shadowColor = color1;
+        ctx.shadowBlur = 15;
+        
+        // 绘制圆角矩形
+        const radius = 4;
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.moveTo(x + radius, canvas.height);
+        ctx.lineTo(x + radius, canvas.height - barHeight);
+        ctx.arcTo(x, canvas.height - barHeight, x, canvas.height - barHeight - radius, radius);
+        ctx.lineTo(x, canvas.height - barHeight);
+        ctx.lineTo(x + barWidth, canvas.height - barHeight);
+        ctx.arcTo(x + barWidth, canvas.height - barHeight, x + barWidth + radius, canvas.height - barHeight, radius);
+        ctx.lineTo(x + barWidth, canvas.height);
+        ctx.arcTo(x + barWidth, canvas.height, x + barWidth - radius, canvas.height, radius);
+        ctx.lineTo(x, canvas.height);
+        ctx.arcTo(x, canvas.height, x, canvas.height - radius, radius);
+        ctx.closePath();
+        ctx.fill();
+        
+        x += barWidth + 1;
+      }
+      
+      // 绘制波形线
+      if (isPlaying) {
+        analyserRef.current.getByteTimeDomainData(dataArray);
+        
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = color2;
+        ctx.beginPath();
+        
+        const sliceWidth = canvas.width / bufferLength;
+        let x = 0;
+        
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = v * canvas.height / 4; // 缩小波形高度
+          
+          if (i === 0) {
+            ctx.moveTo(x, y + canvas.height * 0.75); // 将波形放在底部
+          } else {
+            ctx.lineTo(x, y + canvas.height * 0.75);
+          }
+          
+          x += sliceWidth;
+        }
+        
+        ctx.lineTo(canvas.width, canvas.height * 0.75);
+        ctx.stroke();
+      }
+    };
+    
+    renderFrame();
+  }, [isPlaying, showVisualizer, currentSong, songs]);
+
+  // 歌词更新
+  useEffect(() => {
+    handleLyricsScroll();
+  }, [currentTime, handleLyricsScroll]);
+
+  // 调整canvas大小
+  useEffect(() => {
+    const resizeCanvas = () => {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const container = canvas.parentElement;
+        if (container) {
+          canvas.width = container.clientWidth;
+          canvas.height = 180;
+        }
+      }
+    };
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, []);
+
+  // 组件卸载时清理
+  useEffect(() => {
+    return () => {
+      cleanupAudio();
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, [cleanupAudio]);
+
+  // 切换面板显示
+  const togglePanel = (panel) => {
+    if (activePanel === panel) {
+      setActivePanel('none');
+    } else {
+      setActivePanel(panel);
+    }
+    setIsMobileMenuOpen(false);
+  };
+
+  // 获取当前歌曲的主题色
+  const [primaryColor, secondaryColor] = songs[currentSong].color;
+  
+  return (
+    <div 
+      ref={playerRef}
+      className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white relative"
+    >
+      {/* 动态粒子背景 */}
+      <ParticleBackground isPlaying={isPlaying} />
+      
+      {/* 主内容区 */}
+      <main className="container mx-auto px-4 pt-8 pb-20 relative z-10">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* 中央主播放区 */}
+          <div className="lg:w-3/5 mx-auto lg:mx-0">
