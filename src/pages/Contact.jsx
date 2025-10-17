@@ -88,7 +88,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-1">地址</h3>
-                  <p className="text-white/80">湖北省黄冈市浠水县</p>
+                  <p className="text-white/80">广东省深圳市</p>
                 </div>
               </div>
               

@@ -8,7 +8,7 @@ import PostDetail from "./pages/PostDetail";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Love from "./pages/Love";
-import Music from "./pages/Music";
+import MusicPlayer from "./pages/Music";
 import Travel from "./pages/Travel";
 import NotFound from "./pages/NotFound";
 import { postsData } from "./utils/data";
@@ -57,7 +57,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/love" element={<Love />} />
-            <Route path="/music" element={<Music />} />
+            <Route path="/music" element={<MusicPlayer />} />
                 <Route path="/travel" element={<Travel />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/post/:id" element={<PostDetail getPostById={getPostById} />} />

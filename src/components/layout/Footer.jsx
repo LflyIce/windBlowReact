@@ -54,11 +54,11 @@ const Footer = () => {
             <ul className="space-y-2 text-white/70">
               <li className="flex items-start">
                 <i className="fa fa-envelope mt-1 mr-3 text-white/80"></i>
-                <span>contact@example.com</span>
+                <span>1489751526@qq.com</span>
               </li>
               <li className="flex items-start">
                 <i className="fa fa-map-marker mt-1 mr-3 text-white/80"></i>
-                <span>北京市朝阳区</span>
+                <span>广东省深圳市</span>
               </li>
             </ul>
           </div>
