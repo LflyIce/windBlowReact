@@ -410,7 +410,7 @@ const MusicPlayer = () => {
       }
       
       animationFrameRef.current = requestAnimationFrame(renderFrame);
-      analyserRef.current.getByteFrequencyData(dataArray);
+      analyserRef.current?.getByteFrequencyData(dataArray);
       
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -454,7 +454,7 @@ const MusicPlayer = () => {
       
       // 绘制波形线
       if (isPlaying) {
-        analyserRef.current.getByteTimeDomainData(dataArray);
+        analyserRef.current?.getByteTimeDomainData(dataArray);
         
         ctx.lineWidth = 2;
         ctx.strokeStyle = color2;
