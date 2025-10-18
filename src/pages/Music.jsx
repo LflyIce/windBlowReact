@@ -118,6 +118,7 @@ const MusicPlayer = () => {
   const [showVisualizer, setShowVisualizer] = useState(true);
   const [activePanel, setActivePanel] = useState('playlist'); // 'lyrics', 'playlist', 'none'
   const [currentLyricIndex, setCurrentLyricIndex] = useState(-1); // 当前歌词索引
+  const [isPanelFlipped, setIsPanelFlipped] = useState(false); // 控制面板翻转状态
 
   // 引用
   const audioRef = useRef(null);
@@ -127,6 +128,7 @@ const MusicPlayer = () => {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const sourceRef = useRef(null);
+  const panelRef = useRef(null);
 
   // 音乐列表数据
   const songs = useMemo(() => [
@@ -136,40 +138,176 @@ const MusicPlayer = () => {
       artist: "王力宏",
       album: "恋爱占星音乐全精选",
       duration: "3:58",
-      cover: "https://picsum.photos/seed/album2/600/600",
-      url: "/audio/aicuo.mp3",
-      color: ["#38bdf8", "#0ea5e9"] // 专辑主题色 - 亮蓝到深蓝渐变
+      cover: "https://p11-doubao-search-sign.byteimg.com/labis/8d4176f76ff592e5444d5e45b01fa094~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1765946443&x-signature=%2FqzMPQMPgMFTHSPdtAakSq4RA2c%3D",
+      url: "audio/爱错.mp3",
+      color: ["#38bdf8", "#0ea5e9"], // 专辑主题色 - 亮蓝到深蓝渐变
+      lyrics: [
+        { time: 0, text: "北风毫不留情" },
+        { time: 3, text: "把叶子吹落" },
+        { time: 6, text: "脆弱的她选择了逃脱" },
+        { time: 9, text: "叶子失去消息" },
+        { time: 12, text: "风才感觉寂寞" },
+        { time: 15, text: "整个冬天" },
+        { time: 17, text: "北风的痛没人能说" },
+        { time: 22, text: "我从来没想过我会这样做" },
+        { time: 26, text: "从来没爱过所以爱错" },
+        { time: 30, text: "我从哪里起飞" },
+        { time: 32, text: "从哪里降落" },
+        { time: 34, text: "多少不能原谅的错" },
+        { time: 37, text: "却不能重来过" },
+        { time: 42, text: "翻开回忆角落完美的生活" },
+        { time: 46, text: "以为幸福都可以掌握" },
+        { time: 50, text: "仔细回味当初那个故事背后" },
+        { time: 54, text: "Oh 原来是我" },
+        { time: 56, text: "原来是我" },
+        { time: 58, text: "犯下从没承认的错" },
+        { time: 63, text: "我从来没想过我会这样做" },
+        { time: 67, text: "从来没爱过所以爱错" },
+        { time: 71, text: "我从哪里起飞从哪里降落" },
+        { time: 75, text: "多少不能原谅的错" },
+        { time: 78, text: "却不能重来过" },
+        { time: 83, text: "在这少了你的世界 Oh" },
+        { time: 88, text: "找不回那些感觉" },
+        { time: 92, text: "其实我不想道别那些过去" },
+        { time: 99, text: "我从来没想过我会这样做" },
+        { time: 103, text: "从来没爱过所以爱错" },
+        { time: 107, text: "从来没有爱过那么认真" },
+        { time: 111, text: "我从哪里起飞" },
+        { time: 113, text: "从哪里降落" },
+        { time: 115, text: "多少不能原谅的错" },
+        { time: 118, text: "却不能重" },
+        { time: 123, text: "我从来没想过我会这样做" },
+        { time: 127, text: "从来没爱过所以爱错" },
+        { time: 131, text: "我从哪里起飞" },
+        { time: 133, text: "从哪里降落" },
+        { time: 135, text: "多少不能原谅的错" },
+        { time: 138, text: "请你原谅我的爱错" }
+      ]
     },
     {
       id: 2,
-      title: "SoundHelix Song 2",
-      artist: "SoundHelix",
-      album: "Demo Album",
-      duration: "3:58",
-      cover: "https://picsum.photos/seed/album2/600/600",
-      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-      color: ["#38bdf8", "#0ea5e9"] // 专辑主题色 - 亮蓝到深蓝渐变
+      title: "离开我的依赖",
+      artist: "王艳薇",
+      album: "离开我的依赖",
+      duration: "3:53",
+      cover: "https://p11-doubao-search-sign.byteimg.com/labis/4b72e112d5f76e6893fee627c1ed2242~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1765946443&x-signature=W%2FzsyXUDu8Z3X1BXA7QouX3CiSw%3D",
+      url: "audio/离开我的依赖.mp3",
+      color: ["#f97316", "#ea580c"], // 专辑主题色 - 亮橙到深橙渐变
+      lyrics: [
+        { time: 0, text: "说不出你的轮廓" },
+        { time: 3, text: "看着你的模样" },
+        { time: 6, text: "眼前的美风雨冲淡了它" },
+        { time: 9, text: "看天色渐暗了" },
+        { time: 15, text: "好陌生的一句话" },
+        { time: 18, text: "你看着我说话" },
+        { time: 21, text: "我蒙上了眼" },
+        { time: 23, text: "仿佛你在身旁" },
+        { time: 26, text: "当你不再应答" },
+        { time: 31, text: "我来不及道声不安" },
+        { time: 34, text: "有点混乱有点缓慢" },
+        { time: 37, text: "才发现承诺是谎话" },
+        { time: 40, text: "你倒下了我只能旁观" },
+        { time: 43, text: "我越来越爱" },
+        { time: 45, text: "爱不爱" },
+        { time: 47, text: "都成为我们的负担" },
+        { time: 50, text: "我想要痛快的离开我的依赖" },
+        { time: 57, text: "一句句你的责骂" },
+        { time: 60, text: "是存在的代价" },
+        { time: 63, text: "不想想让我慌乱认痛责备的话" },
+        { time: 66, text: "看天再一次暗了" },
+        { time: 71, text: "我来不及道声不安" },
+        { time: 74, text: "有点混乱有点缓慢" },
+        { time: 77, text: "才发现承诺是谎话" },
+        { time: 80, text: "你倒下了我只能旁观" },
+        { time: 83, text: "我越来越爱" },
+        { time: 85, text: "爱不爱" },
+        { time: 87, text: "都成为我们的负担" },
+        { time: 90, text: "我想要痛快的离开我的依赖" },
+        { time: 98, text: "多少个忍受痛的夜晚你叫我别回来" },
+        { time: 103, text: "我挣扎看你的脸憔悴的心怎放得开" },
+        { time: 111, text: "我来不及道声不安" },
+        { time: 114, text: "有点混乱有点缓慢" },
+        { time: 117, text: "才发现承诺是谎话" },
+        { time: 120, text: "你倒下了我只能旁观" },
+        { time: 123, text: "我越来越爱" },
+        { time: 125, text: "爱不爱" },
+        { time: 127, text: "都成为我们的负担" },
+        { time: 130, text: "我想要痛快的离开我的依赖" },
+        { time: 137, text: "我想要痛快的离开我的依赖" }
+      ]
     },
     {
       id: 3,
-      title: "SoundHelix Song 3",
-      artist: "SoundHelix",
-      album: "Demo Album",
+      title: "零距离的思念",
+      artist: "TINY7",
+      album: "Chose one me",
       duration: "4:45",
-      cover: "https://picsum.photos/seed/album3/600/600",
-      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-      color: ["#f97316", "#ea580c"] // 专辑主题色 - 亮橙到深橙渐变
+      cover: "https://p3-doubao-search-sign.byteimg.com/labis/94846ad73de70bbba5ad298744bf239f~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1765946443&x-signature=6S%2Bq9no%2FWfxZWO2GKjwPfb5%2Fmus%3D",
+      url: "audio/零距离的思念.mp3",
+      color: ["#8b5cf6", "#a78bfa"], // 专辑主题色 - 紫色渐变
+      lyrics: [
+        { time: 0, text: "感情说不清她越道越不明白" },
+        { time: 6, text: "让盲目的爱变习惯延续浪漫" },
+        { time: 10, text: "除非让时间终结whole world" },
+        { time: 14, text: "不停下零距离的想念" },
+        { time: 18, text: "我们的过程遥远但并不艰难" },
+        { time: 22, text: "让情歌在零点转" },
+        { time: 25, text: "这世界因为你变温暖" },
+        { time: 28, text: "不停停下零距离的思念" },
+        { time: 33, text: "桌上的相片 属于我们got memory in my hand" },
+        { time: 36, text: "So how to name us 像无法形容孤独的修炼" },
+        { time: 40, text: "怎么会呆在彼此身边也时刻在思念" },
+        { time: 44, text: "原来我们的爱从不因距离而改变" },
+        { time: 48, text: "没改变我们一样还是会害怕失去" },
+        { time: 51, text: "没改变偶尔争吵直到世界都睡去" },
+        { time: 55, text: "没改变的是思念每天还持续在加剧" },
+        { time: 59, text: "让时间慢下来让思念定格住回忆" },
+        { time: 63, text: "从前让暧昧的话" },
+        { time: 65, text: "变成了文字你才看清" },
+        { time: 68, text: "相遇是解药 却没治好那份恐慌" },
+        { time: 73, text: "把过去都完全遗忘" },
+        { time: 77, text: "我" },
+        { time: 78, text: "后来把暧昧的话" },
+        { time: 80, text: "送到你耳边你才安心" },
+        { time: 83, text: "相遇是解药 但没治愈思念" },
+        { time: 88, text: "不停下零距离的思念" },
+        { time: 89, text: "也许是我们间的热恋没完结" },
+        { time: 93, text: "感情说不清她越道越不明白" },
+        { time: 96, text: "让盲目的爱变习惯延续浪漫" },
+        { time: 100, text: "除非让时间终结whole world" },
+        { time: 104, text: "不停下零距离的想念" },
+        { time: 108, text: "我们的过程遥远但并不艰难" },
+        { time: 112, text: "让情歌在零点转" },
+        { time: 115, text: "这世界因为你变温暖" },
+        { time: 118, text: "不停下零距离的思念" },
+        { time: 123, text: "她的爱是一种选择" },
+        { time: 124, text: "我看倒不见得" },
+        { time: 125, text: "但要抓到你" },
+        { time: 126, text: "她是Cinderella高调到卡到me" },
+        { time: 128, text: "Like a pistol yeah she shot at me" },
+        { time: 130, text: "I hate that when you make me guess" },
+        { time: 132, text: "我搞不懂这是什么comment" },
+        { time: 134, text: "Yeah this" },
+        { time: 135, text: "This is f**king missing" },
+        { time: 137, text: "最稳定的天平有思念挂中间" },
+        { time: 139, text: "我们走的远了好像一步到了" },
+        { time: 141, text: "距离都要半个签证" },
+        { time: 142, text: "When we wanna kiss 那眼里里没有别人" },
+        { time: 144, text: "But why we wanna kiss now 我说那是眼神" },
+        { time: 146, text: "那是思念越深爱越重" },
+        { time: 148, text: "我们互相重伤也互相确认" },
+        { time: 150, text: "她说想到我就对我说" },
+        { time: 152, text: "想要像单元剧就要天天播" },
+        { time: 155, text: "感情说不清不清楚她越道越不明白" },
+        { time: 158, text: "让盲目的爱变习惯延续浪漫" },
+        { time: 162, text: "除非让时间终结whole world" },
+        { time: 166, text: "不停下零距离的想念" },
+        { time: 170, text: "我们的过程遥远但并不艰难" },
+        { time: 174, text: "让情歌在零点转" },
+        { time: 177, text: "这世界因为你变温暖" },
+        { time: 180, text: "不停下零距离的思念" }
+      ]
     },
-    {
-      id: 4,
-      title: "SoundHelix Song 4",
-      artist: "SoundHelix",
-      album: "Demo Album",
-      duration: "3:35",
-      cover: "https://picsum.photos/seed/album4/600/600",
-      url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
-      color: ["#818cf8", "#6366f1"] // 专辑主题色 - 浅紫到靛蓝渐变
-    }
   ], []);
 
   // 格式化时间
@@ -195,16 +333,14 @@ const MusicPlayer = () => {
     if (audioRef.current) {
       const newTime = audioRef.current.currentTime;
       setCurrentTime(newTime);
-      console.log("音频时间更新:", newTime); // 临时添加日志以便调试
     }
   }, []);
 
   // 音频加载元数据
-  const handleLoadedMetadata = useCallback(() => {
+  const handleLoadedMetadata = useMemo(() => {
     if (audioRef.current) {
       const dur = audioRef.current.duration;
       setDuration(dur);
-      console.log("音频元数据加载完成，时长:", dur);
     }
   }, []);
 
@@ -287,11 +423,9 @@ const MusicPlayer = () => {
 
   // 播放/暂停切换
   const togglePlay = () => {
-    console.log("切换播放状态，当前状态:", isPlaying);
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
-        console.log("音频已暂停");
       } else {
         // 尝试播放音频
         const playPromise = audioRef.current.play();
@@ -330,7 +464,6 @@ const MusicPlayer = () => {
     setIsMuted(!isMuted);
     audio.volume = isMuted ? volume : 0;
   };
-
 
   // 清理音频上下文
   const cleanupAudio = useCallback(() => {
@@ -486,59 +619,7 @@ const MusicPlayer = () => {
 
   // 歌词滚动逻辑
   const handleLyricsScroll = useCallback(() => {
-    // 歌词数据
-    const lyrics = {
-      1: [
-        { time: 0, text: "SoundHelix Song 1" },
-        { time: 10, text: "This is a sample lyric line" },
-        { time: 20, text: "Another line of lyrics" },
-        { time: 30, text: "More lyrics for demonstration" },
-        { time: 40, text: "Lyrics keep appearing" },
-        { time: 50, text: "As the song plays" },
-        { time: 60, text: "Time passes by" },
-        { time: 70, text: "And lyrics change" },
-        { time: 80, text: "Just like this one" },
-        { time: 90, text: "And this one too" },
-      ],
-      2: [
-        { time: 0, text: "SoundHelix Song 2" },
-        { time: 15, text: "This is a different song" },
-        { time: 25, text: "With different lyrics" },
-        { time: 35, text: "Each song has its own" },
-        { time: 45, text: "Set of lyrics" },
-        { time: 55, text: "To display" },
-        { time: 65, text: "As it plays" },
-        { time: 75, text: "In the music player" },
-        { time: 85, text: "On the right panel" },
-        { time: 95, text: "Or on mobile devices" },
-      ],
-      3: [
-        { time: 0, text: "SoundHelix Song 3" },
-        { time: 12, text: "Yet another song" },
-        { time: 22, text: "With more lyrics" },
-        { time: 32, text: "To show how" },
-        { time: 42, text: "The lyrics panel works" },
-        { time: 52, text: "With multiple songs" },
-        { time: 62, text: "And their lyrics" },
-        { time: 72, text: "All in one place" },
-        { time: 82, text: "For the user" },
-        { time: 92, text: "To enjoy" },
-      ],
-      4: [
-        { time: 0, text: "SoundHelix Song 4" },
-        { time: 18, text: "The final demo song" },
-        { time: 28, text: "In this music player" },
-        { time: 38, text: "Shows how lyrics" },
-        { time: 48, text: "Are displayed" },
-        { time: 58, text: "In the panel" },
-        { time: 68, text: "On the right" },
-        { time: 78, text: "On desktop" },
-        { time: 88, text: "And can be toggled" },
-        { time: 98, text: "On mobile" },
-      ]
-    };
-    
-    const currentLyrics = lyrics[songs[currentSong].id] || [];
+    const currentLyrics = songs[currentSong].lyrics || [];
     if (currentLyrics.length === 0) return;
     
     // 找到当前时间对应的歌词索引
@@ -551,11 +632,8 @@ const MusicPlayer = () => {
       }
     }
     
-    console.log("计算歌词索引:", newIndex, "当前时间:", currentTime);
-    
     // 只有当索引真正改变时才更新状态
     if (newIndex !== currentLyricIndex && newIndex !== -1) {
-      console.log("更新歌词索引:", currentLyricIndex, "->", newIndex);
       setCurrentLyricIndex(newIndex);
     }
     
@@ -584,7 +662,6 @@ const MusicPlayer = () => {
 
   // 歌词更新
   useEffect(() => {
-    console.log("歌词更新 - 当前时间:", currentTime, "当前歌词索引:", currentLyricIndex);
     handleLyricsScroll();
   }, [currentTime, currentLyricIndex, handleLyricsScroll]);
 
@@ -649,7 +726,6 @@ const MusicPlayer = () => {
 
   // 切换面板显示
   const togglePanel = (panel) => {
-    console.log("切换面板到:", panel, "当前面板:", activePanel);
     if (activePanel === panel) {
       setActivePanel('none');
     } else {
@@ -657,18 +733,16 @@ const MusicPlayer = () => {
     }
   };
 
+  // 切换面板翻转
+  const togglePanelFlip = () => {
+    setIsPanelFlipped(!isPanelFlipped);
+  };
+
   // 获取当前歌曲的主题色
   const [primaryColor, secondaryColor] = songs[currentSong].color;
-  
-  // 添加缺失的ref
-  const playerRef = useRef(null);
-  const panelRef = useRef(null);
 
   return (
-    <div 
-      ref={playerRef}
-      className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white relative"
-    >
+    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white relative">
       {/* 动态粒子背景 */}
       <ParticleBackground isPlaying={isPlaying} />
       
@@ -737,102 +811,6 @@ const MusicPlayer = () => {
                 </div>
               )}
               
-              {/* 歌词面板 */}
-              {activePanel === 'lyrics' && (
-                <div 
-                  ref={lyricsContainerRef}
-                  className="h-full overflow-y-auto pr-2 scrollbar-thin flex flex-col justify-start py-10"
-                  style={{
-                    scrollbarColor: `${primaryColor} transparent`,
-                  }}
-                >
-                  <div className="flex flex-col items-center space-y-6">
-                    {(() => {
-                      console.log("渲染歌词面板，当前歌曲ID:", songs[currentSong].id);
-                      // 歌词数据
-                      const lyrics = {
-                        1: [
-                          { time: 0, text: "SoundHelix Song 1" },
-                          { time: 10, text: "This is a sample lyric line" },
-                          { time: 20, text: "Another line of lyrics" },
-                          { time: 30, text: "More lyrics for demonstration" },
-                          { time: 40, text: "Lyrics keep appearing" },
-                          { time: 50, text: "As the song plays" },
-                          { time: 60, text: "Time passes by" },
-                          { time: 70, text: "And lyrics change" },
-                          { time: 80, text: "Just like this one" },
-                          { time: 90, text: "And this one too" },
-                        ],
-                        2: [
-                          { time: 0, text: "SoundHelix Song 2" },
-                          { time: 15, text: "This is a different song" },
-                          { time: 25, text: "With different lyrics" },
-                          { time: 35, text: "Each song has its own" },
-                          { time: 45, text: "Set of lyrics" },
-                          { time: 55, text: "To display" },
-                          { time: 65, text: "As it plays" },
-                          { time: 75, text: "In the music player" },
-                          { time: 85, text: "On the right panel" },
-                          { time: 95, text: "Or on mobile devices" },
-                        ],
-                        3: [
-                          { time: 0, text: "SoundHelix Song 3" },
-                          { time: 12, text: "Yet another song" },
-                          { time: 22, text: "With more lyrics" },
-                          { time: 32, text: "To show how" },
-                          { time: 42, text: "The lyrics panel works" },
-                          { time: 52, text: "With multiple songs" },
-                          { time: 62, text: "And their lyrics" },
-                          { time: 72, text: "All in one place" },
-                          { time: 82, text: "For the user" },
-                          { time: 92, text: "To enjoy" },
-                        ],
-                        4: [
-                          { time: 0, text: "SoundHelix Song 4" },
-                          { time: 18, text: "The final demo song" },
-                          { time: 28, text: "In this music player" },
-                          { time: 38, text: "Shows how lyrics" },
-                          { time: 48, text: "Are displayed" },
-                          { time: 58, text: "In the panel" },
-                          { time: 68, text: "On the right" },
-                          { time: 78, text: "On desktop" },
-                          { time: 88, text: "And can be toggled" },
-                          { time: 98, text: "On mobile" },
-                        ]
-                      };
-                      
-                      const currentSongLyrics = lyrics[songs[currentSong].id] || [];
-                      console.log("当前歌曲歌词:", currentSongLyrics);
-                      
-                      if (currentSongLyrics.length === 0) {
-                        return (
-                          <div className="text-center py-10">
-                            <p className="text-white/50">暂无歌词111</p>
-                          </div>
-                        );
-                      }
-                      
-                      return currentSongLyrics.map((lyric, index) => (
-                        <div 
-                          key={index}
-                          className={`lyric-item transition-all duration-300 py-4 px-6 rounded-xl transform-gpu ${
-                            index === currentLyricIndex 
-                              ? 'text-2xl font-bold scale-105 opacity-100 active' 
-                              : 'text-lg opacity-50 hover:opacity-90'
-                          }`}
-                          style={{
-                            textShadow: index === currentLyricIndex ? `0 0 20px ${primaryColor}80` : 'none',
-                            color: index === currentLyricIndex ? primaryColor : 'inherit',
-                            transition: 'all 0.3s ease-out'
-                          }}
-                        >
-                          {lyric.text}
-                        </div>
-                      ));
-                    })()}
-                  </div>
-                </div>
-              )}
               {/* 进度条 */}
               <div className="flex items-center space-x-2 mb-2">
                 <span className="text-xs text-white/70 w-10 text-right">
@@ -916,7 +894,7 @@ const MusicPlayer = () => {
             </div>
           </div>
 
-          {/* 侧边面板 - 歌词或播放列表 */}
+          {/* 侧边面板 - 歌词或播放列表（带3D翻转效果） */}
           <div 
             ref={panelRef}
             className={`lg:w-2/5 rounded-2xl border border-white/10 shadow-xl backdrop-blur-xl bg-white/5 overflow-hidden transition-all duration-500 ease-in-out z-20 ${
@@ -927,111 +905,152 @@ const MusicPlayer = () => {
             style={{
               boxShadow: `0 0 30px rgba(0, 0, 0, 0.3)`,
               maxHeight: 'calc(100vh - 120px)',
+              transformStyle: 'preserve-3d',
+              perspective: '1000px'
             }}
           >
-            {/* 面板头部 */}
+            {/* 面板头部 - 带翻转按钮 */}
             <div className="p-4 border-b border-white/10 flex justify-between items-center">
               <h2 className="text-xl font-bold">
                 <span 
                   className="bg-clip-text text-transparent bg-gradient-to-r"
                   style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
                 >
-                  {activePanel === 'lyrics' ? '歌词' : '播放列表'}
+                  {isPanelFlipped ? '歌词' : '播放列表'}
                 </span>
               </h2>
-              <button 
-                onClick={() => setActivePanel('none')}
-                className="p-2 rounded-full hover:bg-white/10 transition-all"
-                aria-label="关闭"
-              >
-                <X size={18} />
-              </button>
+              <div className="flex space-x-2">
+                <button 
+                  onClick={togglePanelFlip}
+                  className="p-2 rounded-full hover:bg-white/10 transition-all"
+                  aria-label={isPanelFlipped ? "切换到播放列表" : "切换到歌词"}
+                >
+                  <div 
+                    className="w-5 h-5 relative"
+                    style={{
+                      transformStyle: 'preserve-3d',
+                      transition: 'transform 0.5s ease',
+                      transform: isPanelFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                    }}
+                  >
+                    <div className="absolute inset-0 backface-hidden">
+                      <List size={18} />
+                    </div>
+                    <div className="absolute inset-0 backface-hidden" style={{ transform: 'rotateY(180deg)' }}>
+                      <Music size={18} />
+                    </div>
+                  </div>
+                </button>
+                <button 
+                  onClick={() => setActivePanel('none')}
+                  className="p-2 rounded-full hover:bg-white/10 transition-all"
+                  aria-label="关闭"
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
             
-            {/* 面板内容 */}
-            <div className="p-4 h-[calc(100vh-180px)] overflow-y-auto">
-              {/* 歌词面板 */}
-              {activePanel === 'lyrics' && (
+            {/* 面板内容 - 3D翻转效果 */}
+            <div 
+              className="p-4 h-[calc(100vh-180px)] overflow-hidden"
+              style={{
+                perspective: '1000px'
+              }}
+            >
+              <div 
+                className="relative w-full h-full transition-transform duration-700 ease-in-out transform-style-3d"
+                style={{
+                  transform: isPanelFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                }}
+              >
+                {/* 正面 - 播放列表 */}
                 <div 
-                  ref={lyricsContainerRef}
-                  className="h-full overflow-y-auto pr-2 scrollbar-thin flex flex-col justify-start py-10"
+                  className="absolute inset-0 backface-hidden overflow-y-auto"
                   style={{
-                    scrollbarColor: `${primaryColor} transparent`,
+                    backfaceVisibility: 'hidden'
                   }}
                 >
-                  <div className="flex flex-col items-center space-y-6">
-                    {(() => {
-                      console.log("渲染歌词面板，当前歌曲ID:", songs[currentSong].id);
-                      // 歌词数据
-                      const lyrics = {
-                        1: [
-                          { time: 0, text: "SoundHelix Song 1" },
-                          { time: 10, text: "This is a sample lyric line" },
-                          { time: 20, text: "Another line of lyrics" },
-                          { time: 30, text: "More lyrics for demonstration" },
-                          { time: 40, text: "Lyrics keep appearing" },
-                          { time: 50, text: "As the song plays" },
-                          { time: 60, text: "Time passes by" },
-                          { time: 70, text: "And lyrics change" },
-                          { time: 80, text: "Just like this one" },
-                          { time: 90, text: "And this one too" },
-                        ],
-                        2: [
-                          { time: 0, text: "SoundHelix Song 2" },
-                          { time: 15, text: "This is a different song" },
-                          { time: 25, text: "With different lyrics" },
-                          { time: 35, text: "Each song has its own" },
-                          { time: 45, text: "Set of lyrics" },
-                          { time: 55, text: "To display" },
-                          { time: 65, text: "As it plays" },
-                          { time: 75, text: "In the music player" },
-                          { time: 85, text: "On the right panel" },
-                          { time: 95, text: "Or on mobile devices" },
-                        ],
-                        3: [
-                          { time: 0, text: "SoundHelix Song 3" },
-                          { time: 12, text: "Yet another song" },
-                          { time: 22, text: "With more lyrics" },
-                          { time: 32, text: "To show how" },
-                          { time: 42, text: "The lyrics panel works" },
-                          { time: 52, text: "With multiple songs" },
-                          { time: 62, text: "And their lyrics" },
-                          { time: 72, text: "All in one place" },
-                          { time: 82, text: "For the user" },
-                          { time: 92, text: "To enjoy" },
-                        ],
-                        4: [
-                          { time: 0, text: "SoundHelix Song 4" },
-                          { time: 18, text: "The final demo song" },
-                          { time: 28, text: "In this music player" },
-                          { time: 38, text: "Shows how lyrics" },
-                          { time: 48, text: "Are displayed" },
-                          { time: 58, text: "In the panel" },
-                          { time: 68, text: "On the right" },
-                          { time: 78, text: "On desktop" },
-                          { time: 88, text: "And can be toggled" },
-                          { time: 98, text: "On mobile" },
-                        ]
-                      };
-                      
-                      const currentSongLyrics = lyrics[songs[currentSong].id] || [];
-                      console.log("当前歌曲歌词:", currentSongLyrics);
-                      
-                      if (currentSongLyrics.length === 0) {
-                        return (
-                          <div className="text-center py-10">
-                            <p className="text-white/50">暂无歌词</p>
-                          </div>
-                        );
-                      }
-                      
-                      return currentSongLyrics.map((lyric, index) => (
+                  <div className="space-y-2">
+                    {songs.map((song, index) => (
+                      <div 
+                        key={song.id}
+                        className={`flex items-center p-3 rounded-xl transition-all duration-300 cursor-pointer ${
+                          index === currentSong 
+                            ? 'bg-white/10 scale-[1.02]' 
+                            : 'hover:bg-white/5'
+                        }`}
+                        style={{
+                          boxShadow: index === currentSong 
+                            ? `0 0 15px ${primaryColor}50` 
+                            : 'none'
+                        }}
+                        onClick={() => playSong(index)}
+                      >
+                        {/* 专辑封面 */}
+                        <div className="relative">
+                          <img 
+                            src={song.cover} 
+                            alt={song.title} 
+                            className="w-12 h-12 rounded-lg object-cover"
+                          />
+                          {index === currentSong && isPlaying && (
+                            <div 
+                              className="absolute inset-0 rounded-lg border-2 border-white/30 animate-ping"
+                              style={{ borderColor: `${primaryColor}50` }}
+                            ></div>
+                          )}
+                        </div>
+                          
+                        {/* 歌曲信息 */}
+                        <div className="ml-3 flex-1 min-w-0">
+                          <h3 className={`font-medium truncate ${
+                            index === currentSong ? 'text-white' : 'text-white/80'
+                          }`}>
+                            {song.title}
+                          </h3>
+                          <p className="text-sm text-white/60 truncate">{song.artist}</p>
+                        </div>
+                          
+                        {/* 时长和操作按钮 */}
+                        <div className="text-white/70 text-sm mr-4">{song.duration}</div>
+                          
+                        <div className="flex space-x-1">
+                          <button className="p-2 rounded-full hover:bg-white/10 transition-colors">
+                            <Heart className="h-4 w-4" />
+                          </button>
+                          <button className="p-2 rounded-full hover:bg-white/10 transition-colors">
+                            <Share2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* 背面 - 歌词 */}
+                <div 
+                  className="absolute inset-0 backface-hidden overflow-y-auto"
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    transform: 'rotateY(180deg)'
+                  }}
+                >
+                  <div 
+                    ref={lyricsContainerRef}
+                    className="h-full overflow-y-auto pr-2 scrollbar-thin flex flex-col justify-start py-4"
+                    style={{
+                      scrollbarColor: `${primaryColor} transparent`,
+                    }}
+                  >
+                    <div className="flex flex-col items-center space-y-4">
+                      {songs[currentSong].lyrics.map((lyric, index) => (
                         <div 
                           key={index}
-                          className={`lyric-item transition-all duration-300 py-4 px-6 rounded-xl transform-gpu ${
+                          className={`lyric-item transition-all duration-300 py-2 px-4 rounded-xl transform-gpu w-full text-center ${
                             index === currentLyricIndex 
-                              ? 'text-2xl font-bold scale-105 opacity-100 active' 
-                              : 'text-lg opacity-50 hover:opacity-90'
+                              ? 'text-xl font-bold scale-105 opacity-100 active' 
+                              : 'text-base opacity-50 hover:opacity-90'
                           }`}
                           style={{
                             textShadow: index === currentLyricIndex ? `0 0 20px ${primaryColor}80` : 'none',
@@ -1041,70 +1060,11 @@ const MusicPlayer = () => {
                         >
                           {lyric.text}
                         </div>
-                      ));
-                    })()}
+                      ))}
+                    </div>
                   </div>
                 </div>
-              )}
-              
-              {/* 播放列表面板 */}
-              {activePanel === 'playlist' && (
-                <div className="space-y-2 max-h-full overflow-y-auto h-full">
-                  {songs.map((song, index) => (
-                    <div 
-                      key={song.id}
-                      className={`flex items-center p-3 rounded-xl transition-all duration-300 cursor-pointer ${
-                        index === currentSong 
-                          ? 'bg-white/10 scale-[1.02]' 
-                          : 'hover:bg-white/5'
-                      }`}
-                      style={{
-                        boxShadow: index === currentSong 
-                          ? `0 0 15px ${primaryColor}50` 
-                          : 'none'
-                      }}
-                      onClick={() => playSong(index)}
-                    >
-                      {/* 专辑封面 */}
-                      <div className="relative">
-                        <img 
-                          src={song.cover} 
-                          alt={song.title} 
-                          className="w-12 h-12 rounded-lg object-cover"
-                        />
-                        {index === currentSong && isPlaying && (
-                          <div 
-                            className="absolute inset-0 rounded-lg border-2 border-white/30 animate-ping"
-                            style={{ borderColor: `${primaryColor}50` }}
-                          ></div>
-                        )}
-                      </div>
-                      
-                      {/* 歌曲信息 */}
-                      <div className="ml-3 flex-1 min-w-0">
-                        <h3 className={`font-medium truncate ${
-                          index === currentSong ? 'text-white' : 'text-white/80'
-                        }`}>
-                          {song.title}
-                        </h3>
-                        <p className="text-sm text-white/60 truncate">{song.artist}</p>
-                      </div>
-                      
-                      {/* 时长和操作按钮 */}
-                      <div className="text-white/70 text-sm mr-4">{song.duration}</div>
-                      
-                      <div className="flex space-x-1">
-                        <button className="p-2 rounded-full hover:bg-white/10 transition-colors">
-                          <Heart className="h-4 w-4" />
-                        </button>
-                        <button className="p-2 rounded-full hover:bg-white/10 transition-colors">
-                          <Share2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -1132,14 +1092,11 @@ const MusicPlayer = () => {
             <SkipForward className="h-6 w-6" />
           </button>
           <button 
-            onClick={() => {
-              console.log("点击歌词按钮");
-              togglePanel('lyrics');
-            }}
+            onClick={togglePanelFlip}
             className="p-2 hover:bg-white/10 rounded-full transition-all ml-auto"
-            aria-label="歌词"
+            aria-label={isPanelFlipped ? "切换到播放列表" : "切换到歌词"}
           >
-            <Music className="h-5 w-5" />
+            {isPanelFlipped ? <List className="h-5 w-5" /> : <Music className="h-5 w-5" />}
           </button>
           <button 
             onClick={() => togglePanel('playlist')}
@@ -1226,6 +1183,10 @@ const MusicPlayer = () => {
           transform-style: preserve-3d;
         }
         
+        .backface-hidden {
+          backface-visibility: hidden;
+        }
+        
         /* 歌词面板滚动条样式 */
         .scrollbar-thin::-webkit-scrollbar {
           width: 6px;
@@ -1237,12 +1198,12 @@ const MusicPlayer = () => {
         }
         
         .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #ff4ecd, #a855f7);
+          background: linear-gradient(to bottom, ${primaryColor}, ${secondaryColor});
           border-radius: 10px;
         }
         
         .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #a855f7, #ff4ecd);
+          background: linear-gradient(to bottom, ${secondaryColor}, ${primaryColor});
         }
         
         /* 歌词项动画 */
