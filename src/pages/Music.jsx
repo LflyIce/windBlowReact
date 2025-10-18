@@ -12,6 +12,8 @@ const ParticleBackground = ({ isPlaying }) => {
     const ctx = canvas.getContext('2d');
     let particles = [];
     let animationFrameId;
+    let lightningBolt = null;
+    let lightningTime = 0;
     
     // 设置canvas尺寸
     const resizeCanvas = () => {
@@ -41,9 +43,181 @@ const ParticleBackground = ({ isPlaying }) => {
       }
     };
     
+    // 创建闪电
+    const createLightning = () => {
+      if (!isPlaying) return null;
+      
+      // 随机决定是否创建闪电
+      if (Math.random() > 0.8) {
+        const startX = Math.random() * canvas.width;
+        const startY = Math.random() * canvas.height * 0.3;
+        
+        return {
+          x: startX,
+          y: startY,
+          segments: [],
+          alpha: 1,
+          decay: 0.02,
+          color: Math.random() > 0.5 ? '#38bdf8' : '#8b5cf6'
+        };
+      }
+      
+      return null;
+    };
+    
+    // 生成闪电线段
+    const generateLightningSegments = (bolt) => {
+      if (!bolt) return;
+      
+      const segments = [];
+      let x = bolt.x;
+      let y = bolt.y;
+      const endY = canvas.height * (0.7 + Math.random() * 0.3);
+      
+      segments.push({ x, y });
+      
+      // 生成主闪电
+      while (y < endY) {
+        const angle = Math.random() * Math.PI - Math.PI / 2; // -90度到90度
+        const length = 10 + Math.random() * 30;
+        
+        x += Math.cos(angle) * length;
+        y += Math.sin(angle) * length;
+        
+        // 确保闪电在画布范围内
+        x = Math.max(0, Math.min(canvas.width, x));
+        
+        segments.push({ x, y });
+      }
+      
+      bolt.segments = segments;
+      
+      // 添加分支
+      if (segments.length > 2 && Math.random() > 0.3) {
+        const branchIndex = Math.floor(Math.random() * (segments.length - 2)) + 1;
+        const branchStart = segments[branchIndex];
+        
+        const branchSegments = [];
+        let branchX = branchStart.x;
+        let branchY = branchStart.y;
+        
+        branchSegments.push({ x: branchX, y: branchY });
+        
+        // 生成分支闪电
+        for (let i = 0; i < 5; i++) {
+          const angle = Math.random() * Math.PI - Math.PI / 2; // -90度到90度
+          const length = 5 + Math.random() * 15;
+          
+          branchX += Math.cos(angle) * length;
+          branchY += Math.sin(angle) * length;
+          
+          // 确保闪电在画布范围内
+          branchX = Math.max(0, Math.min(canvas.width, branchX));
+          
+          branchSegments.push({ x: branchX, y: branchY });
+          
+          // 随机结束分支
+          if (Math.random() > 0.7) break;
+        }
+        
+        bolt.branchSegments = branchSegments;
+      }
+    };
+    
+    // 绘制闪电
+    const drawLightning = (bolt) => {
+      if (!bolt || !bolt.segments || bolt.alpha <= 0) return;
+      
+      ctx.save();
+      ctx.globalAlpha = bolt.alpha;
+      
+      // 绘制主闪电
+      ctx.beginPath();
+      ctx.moveTo(bolt.segments[0].x, bolt.segments[0].y);
+      
+      for (let i = 1; i < bolt.segments.length; i++) {
+        ctx.lineTo(bolt.segments[i].x, bolt.segments[i].y);
+      }
+      
+      ctx.strokeStyle = bolt.color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      // 绘制闪电辉光
+      ctx.beginPath();
+      ctx.moveTo(bolt.segments[0].x, bolt.segments[0].y);
+      
+      for (let i = 1; i < bolt.segments.length; i++) {
+        ctx.lineTo(bolt.segments[i].x, bolt.segments[i].y);
+      }
+      
+      ctx.strokeStyle = bolt.color;
+      ctx.lineWidth = 6;
+      ctx.globalAlpha = bolt.alpha * 0.3;
+      ctx.stroke();
+      
+      // 绘制分支闪电
+      if (bolt.branchSegments) {
+        ctx.beginPath();
+        ctx.moveTo(bolt.branchSegments[0].x, bolt.branchSegments[0].y);
+        
+        for (let i = 1; i < bolt.branchSegments.length; i++) {
+          ctx.lineTo(bolt.branchSegments[i].x, bolt.branchSegments[i].y);
+        }
+        
+        ctx.strokeStyle = bolt.color;
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = bolt.alpha * 0.7;
+        ctx.stroke();
+        
+        // 绘制分支辉光
+        ctx.beginPath();
+        ctx.moveTo(bolt.branchSegments[0].x, bolt.branchSegments[0].y);
+        
+        for (let i = 1; i < bolt.branchSegments.length; i++) {
+          ctx.lineTo(bolt.branchSegments[i].x, bolt.branchSegments[i].y);
+        }
+        
+        ctx.strokeStyle = bolt.color;
+        ctx.lineWidth = 4;
+        ctx.globalAlpha = bolt.alpha * 0.2;
+        ctx.stroke();
+      }
+      
+      ctx.restore();
+      
+      // 更新闪电透明度
+      bolt.alpha -= bolt.decay;
+      if (bolt.alpha < 0) bolt.alpha = 0;
+    };
+    
     // 绘制粒子
     const drawParticles = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // 绘制闪电
+      if (isPlaying) {
+        lightningTime++;
+        
+        // 每隔一段时间随机时间创建新闪电
+        if (lightningTime > 120 + Math.random() * 200) {
+          lightningBolt = createLightning();
+          if (lightningBolt) {
+            generateLightningSegments(lightningBolt);
+          }
+          lightningTime = 0;
+        }
+        
+        // 绘制闪电
+        if (lightningBolt) {
+          drawLightning(lightningBolt);
+          
+          // 如果闪电消失，清除引用
+          if (lightningBolt.alpha <= 0) {
+            lightningBolt = null;
+          }
+        }
+      }
       
       particles.forEach((particle, index) => {
         // 更新位置
@@ -100,10 +274,20 @@ const ParticleBackground = ({ isPlaying }) => {
   }, [isPlaying]);
   
   return (
-    <canvas 
-      ref={canvasRef} 
-      className="fixed top-0 left-0 w-full h-full pointer-events-none z-[-1]"
-    />
+    <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[-1]">
+      {/* 闪电背景图片 */}
+      <div 
+        className="absolute top-0 left-0 w-full h-full opacity-20"
+        style={{ 
+          backgroundImage: 'url(https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/077cba082eb345a9b2447905c89f107d~tplv-a9rns2rl98-image.image?rcl=202510181309323AF5193397EC6304771B&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1763356188&x-signature=F%2BmBNCBSI1bSWAtXk9WV6J6nqfM%3D)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+      {/* 粒子画布 */}
+      <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full" />
+    </div>
   );
 };
 
@@ -138,50 +322,55 @@ const MusicPlayer = () => {
       artist: "王力宏",
       album: "恋爱占星音乐全精选",
       duration: "3:58",
-      cover: "https://p11-doubao-search-sign.byteimg.com/labis/8d4176f76ff592e5444d5e45b01fa094~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1765946443&x-signature=%2FqzMPQMPgMFTHSPdtAakSq4RA2c%3D",
+      cover: "audio/爱错.png",
       url: "audio/爱错.mp3",
       color: ["#38bdf8", "#0ea5e9"], // 专辑主题色 - 亮蓝到深蓝渐变
       lyrics: [
-        { time: 0, text: "北风毫不留情" },
-        { time: 3, text: "把叶子吹落" },
-        { time: 6, text: "脆弱的她选择了逃脱" },
-        { time: 9, text: "叶子失去消息" },
-        { time: 12, text: "风才感觉寂寞" },
-        { time: 15, text: "整个冬天" },
-        { time: 17, text: "北风的痛没人能说" },
-        { time: 22, text: "我从来没想过我会这样做" },
-        { time: 26, text: "从来没爱过所以爱错" },
-        { time: 30, text: "我从哪里起飞" },
-        { time: 32, text: "从哪里降落" },
-        { time: 34, text: "多少不能原谅的错" },
-        { time: 37, text: "却不能重来过" },
-        { time: 42, text: "翻开回忆角落完美的生活" },
-        { time: 46, text: "以为幸福都可以掌握" },
-        { time: 50, text: "仔细回味当初那个故事背后" },
-        { time: 54, text: "Oh 原来是我" },
-        { time: 56, text: "原来是我" },
-        { time: 58, text: "犯下从没承认的错" },
-        { time: 63, text: "我从来没想过我会这样做" },
-        { time: 67, text: "从来没爱过所以爱错" },
-        { time: 71, text: "我从哪里起飞从哪里降落" },
-        { time: 75, text: "多少不能原谅的错" },
-        { time: 78, text: "却不能重来过" },
-        { time: 83, text: "在这少了你的世界 Oh" },
-        { time: 88, text: "找不回那些感觉" },
-        { time: 92, text: "其实我不想道别那些过去" },
-        { time: 99, text: "我从来没想过我会这样做" },
-        { time: 103, text: "从来没爱过所以爱错" },
-        { time: 107, text: "从来没有爱过那么认真" },
-        { time: 111, text: "我从哪里起飞" },
-        { time: 113, text: "从哪里降落" },
-        { time: 115, text: "多少不能原谅的错" },
-        { time: 118, text: "却不能重" },
-        { time: 123, text: "我从来没想过我会这样做" },
-        { time: 127, text: "从来没爱过所以爱错" },
-        { time: 131, text: "我从哪里起飞" },
-        { time: 133, text: "从哪里降落" },
-        { time: 135, text: "多少不能原谅的错" },
-        { time: 138, text: "请你原谅我的爱错" }
+        { time: 13, text: "北风毫不留情" },
+        { time: 17, text: "把叶子吹落" },
+        { time: 20, text: "脆弱的她选择了逃脱" },
+        { time: 26, text: "叶子失去消息" },
+        { time: 29, text: "风才感觉寂寞" },
+        { time: 35, text: "整个冬天" },
+        { time: 38, text: "北风的痛没人能说" },
+        { time: 45, text: "我从来没想过" },
+        { time: 48, text: "我会这样做" },
+        { time: 52, text: "从来没爱过" },
+        { time: 55, text: "所以爱错" },
+        { time: 58, text: "我从哪里起飞" },
+        { time: 61, text: "从哪里降落" },
+        { time: 65, text: "多少不能原谅的错 却不能重来过" },
+        { time: 119, text: "翻开回忆角落" },
+        { time: 123, text: "完美的生活" },
+        { time: 126, text: "以为幸福都可以掌握" },
+        { time: 132, text: "仔细回味当初那个故事背后" },
+        { time: 141, text: "Oh 原来是我" },
+        { time: 144, text: "原来是我" },
+        { time: 145, text: "犯下从没承认的错" },
+        { time: 151, text: "我从来没想过" },
+        { time: 154, text: "我会这样做" },
+        { time: 158, text: "从来没爱过 所以爱错" },
+        { time: 164, text: "我从哪里起飞" },
+        { time: 167, text: "从哪里降落" },
+        { time: 171, text: "多少不能原谅的错 却不能重来过" },
+        { time: 182, text: "在这少了你的世界" },
+        { time: 187, text: "Oh 找不回那些感觉" },
+        { time: 193, text: "其实我不想 道别" },
+        { time: 200, text: "那些过去" },
+        { time: 204, text: "我从来没想过" },
+        { time: 207, text: "我会这样做" },
+        { time: 210, text: "从来没爱过" },
+        { time: 215, text: "从来没有爱过那么认真" },
+        { time: 218, text: "我从哪里起飞" },
+        { time: 220, text: "从哪里降落" },
+        { time: 224, text: "多少不能原谅的错 却不能重" },
+        { time: 230, text: "我从来没想过" },
+        { time: 233, text: "我会这样做" },
+        { time: 237, text: "从来没爱过 所以爱错" },
+        { time: 244, text: "我从哪里起飞" },
+        { time: 247, text: "从哪里降落" },
+        { time: 250, text: "多少不能原谅的错" },
+        { time: 254, text: "请你原谅我的爱错" }
       ]
     },
     {
@@ -190,50 +379,50 @@ const MusicPlayer = () => {
       artist: "王艳薇",
       album: "离开我的依赖",
       duration: "3:53",
-      cover: "https://p11-doubao-search-sign.byteimg.com/labis/4b72e112d5f76e6893fee627c1ed2242~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1765946443&x-signature=W%2FzsyXUDu8Z3X1BXA7QouX3CiSw%3D",
+      cover: "audio/离开我的依赖.png",
       url: "audio/离开我的依赖.mp3",
       color: ["#f97316", "#ea580c"], // 专辑主题色 - 亮橙到深橙渐变
       lyrics: [
-        { time: 0, text: "说不出你的轮廓" },
-        { time: 3, text: "看着你的模样" },
-        { time: 6, text: "眼前的美风雨冲淡了它" },
-        { time: 9, text: "看天色渐暗了" },
-        { time: 15, text: "好陌生的一句话" },
-        { time: 18, text: "你看着我说话" },
-        { time: 21, text: "我蒙上了眼" },
-        { time: 23, text: "仿佛你在身旁" },
-        { time: 26, text: "当你不再应答" },
-        { time: 31, text: "我来不及道声不安" },
-        { time: 34, text: "有点混乱有点缓慢" },
-        { time: 37, text: "才发现承诺是谎话" },
-        { time: 40, text: "你倒下了我只能旁观" },
-        { time: 43, text: "我越来越爱" },
-        { time: 45, text: "爱不爱" },
-        { time: 47, text: "都成为我们的负担" },
-        { time: 50, text: "我想要痛快的离开我的依赖" },
-        { time: 57, text: "一句句你的责骂" },
-        { time: 60, text: "是存在的代价" },
-        { time: 63, text: "不想想让我慌乱认痛责备的话" },
-        { time: 66, text: "看天再一次暗了" },
-        { time: 71, text: "我来不及道声不安" },
-        { time: 74, text: "有点混乱有点缓慢" },
-        { time: 77, text: "才发现承诺是谎话" },
+        { time: 10, text: "说不出你的轮廓" },
+        { time: 17, text: "看着你的模样" },
+        { time: 25, text: "眼前的美风雨冲淡了它" },
+        { time: 32, text: "看天色渐暗了" },
+        { time: 40, text: "好陌生的一句话" },
+        { time: 47, text: "你看着我说话" },
+        { time: 55, text: "我蒙上了眼" },
+        { time: 59, text: "仿佛你在身旁" },
+        { time: 62, text: "当你不再应答" },
+        { time: 69, text: "我来不及道声不安" },
+        { time: 72, text: "有点混乱有点缓慢" },
+        { time: 76, text: "才发现承诺是谎话" },
         { time: 80, text: "你倒下了我只能旁观" },
-        { time: 83, text: "我越来越爱" },
-        { time: 85, text: "爱不爱" },
-        { time: 87, text: "都成为我们的负担" },
-        { time: 90, text: "我想要痛快的离开我的依赖" },
-        { time: 98, text: "多少个忍受痛的夜晚你叫我别回来" },
-        { time: 103, text: "我挣扎看你的脸憔悴的心怎放得开" },
-        { time: 111, text: "我来不及道声不安" },
-        { time: 114, text: "有点混乱有点缓慢" },
-        { time: 117, text: "才发现承诺是谎话" },
-        { time: 120, text: "你倒下了我只能旁观" },
-        { time: 123, text: "我越来越爱" },
-        { time: 125, text: "爱不爱" },
-        { time: 127, text: "都成为我们的负担" },
-        { time: 130, text: "我想要痛快的离开我的依赖" },
-        { time: 137, text: "我想要痛快的离开我的依赖" }
+        { time: 84, text: "我越来越爱" },
+        { time: 86, text: "爱不爱" },
+        { time: 88, text: "都成为我们的负担" },
+        { time: 92, text: "我想要痛快的离开我的依赖" },
+        { time: 109, text: "一句句你的责骂" },
+        { time: 115, text: "是存在的代价" },
+        { time: 123, text: "不想让我慌乱认痛责备的话" },
+        { time: 131, text: "看天再一次暗了" },
+        { time: 138, text: "我来不及道声不安" },
+        { time: 141, text: "有点混乱有点缓慢" },
+        { time: 145, text: "才发现承诺是谎话" },
+        { time: 149, text: "你倒下了我只能旁观" },
+        { time: 153, text: "我越来越爱" },
+        { time: 155, text: "爱不爱" },
+        { time: 157, text: "都成为我们的负担" },
+        { time: 160, text: "我想要痛快的离开我的依赖" },
+        { time: 168, text: "多少个忍受痛的夜晚你叫我别回来" },
+        { time: 176, text: "我挣扎看你的脸憔悴的心怎放得开" },
+        { time: 187, text: "我来不及道声不安" },
+        { time: 191, text: "有点混乱有点缓慢" },
+        { time: 194, text: "才发现承诺是谎话" },
+        { time: 198, text: "你倒下了我只能旁观" },
+        { time: 202, text: "我越来越爱" },
+        { time: 204, text: "爱不爱" },
+        { time: 206, text: "都成为我们的负担" },
+        { time: 210, text: "我想要痛快的离开我的依赖" },
+        { time: 217, text: "我想要痛快的离开我的依赖" }
       ]
     },
     {
@@ -241,8 +430,8 @@ const MusicPlayer = () => {
       title: "零距离的思念",
       artist: "TINY7",
       album: "Chose one me",
-      duration: "4:45",
-      cover: "https://p3-doubao-search-sign.byteimg.com/labis/94846ad73de70bbba5ad298744bf239f~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1765946443&x-signature=6S%2Bq9no%2FWfxZWO2GKjwPfb5%2Fmus%3D",
+      duration: "3:06",
+      cover: "audio/零距离的思念.png",
       url: "audio/零距离的思念.mp3",
       color: ["#8b5cf6", "#a78bfa"], // 专辑主题色 - 紫色渐变
       lyrics: [
@@ -337,7 +526,7 @@ const MusicPlayer = () => {
   }, []);
 
   // 音频加载元数据
-  const handleLoadedMetadata = useMemo(() => {
+  const handleLoadedMetadata = useCallback(() => {
     if (audioRef.current) {
       const dur = audioRef.current.duration;
       setDuration(dur);
