@@ -58,7 +58,7 @@ const Footer = () => {
               </li>
               <li className="flex items-start">
                 <i className="fa fa-map-marker mt-1 mr-3 text-white/80"></i>
-                <span>广东省深圳市</span>
+                <span>符文大陆市拉萨拉区真新镇</span>
               </li>
             </ul>
           </div>
@@ -67,7 +67,7 @@ const Footer = () => {
         {/* 版权信息 */}
         <div className="border-t border-white/20 pt-8 text-center">
           <p className="text-white/70">
-            &copy; {new Date().getFullYear()} 我的博客. 保留所有权利。
+            &copy; {new Date().getFullYear()} 春风不解藏匿 ☘︎
           </p>
         </div>
       </div>

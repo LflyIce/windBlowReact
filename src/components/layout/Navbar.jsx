@@ -27,7 +27,7 @@ const Navbar = ({ isScrolled }) => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link to="/" className="text-2xl font-bold text-white">
-            我的博客
+            玖月的博客
           </Link>
 
           {/* 桌面端导航 */}

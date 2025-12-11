@@ -1,8 +1,8 @@
 // 作者信息
 export const author = {
   id: 1,
-  name: "冯行",
-  title: "前端开发工程师 | 游戏爱好者 | 社交达人",
+  name: "玖月",
+  title: "全栈开发工程师 | 游戏糕手 | 社交I人",
   bio: "探索生活的本质，分享关于极简主义、个人成长和可持续生活的思考与实践。",
   avatar: "/imgs/avatar.jpg",
   socialLinks: [
@@ -37,7 +37,7 @@ export const featuredPost = {
   comments: [
     {
       id: 1,
-      authorName: "张华",
+      authorName: "胖胖龙",
       authorAvatar: "/imgs/comment1.jpg",
       date: "2023年6月16日",
       content: "非常有见地的文章！我一直在为分心问题困扰，这些方法很实用。",
@@ -45,7 +45,7 @@ export const featuredPost = {
     },
     {
       id: 2,
-      authorName: "李娜",
+      authorName: "爆爆龙",
       authorAvatar: "/imgs/comment2.jpg",
       date: "2023年6月17日",
       content: "深度工作的理念真的改变了我的工作方式，感谢分享！",
@@ -167,7 +167,7 @@ export const postsData = [
     comments: [
       {
         id: 1,
-        authorName: "王强",
+        authorName: "王宇浩",
         authorAvatar: "/imgs/comment3.jpg",
         date: "2023年5月29日",
         content: "一直在尝试极简生活，这篇文章给了我很多新的启发，谢谢分享！",
@@ -292,7 +292,7 @@ export const postsData = [
       },
       {
         id: 2,
-        authorName: "陈小雨",
+        authorName: "麦晓雯",
         authorAvatar: "/imgs/comment2.jpg",
         date: "2023年5月17日",
         content: "早起真的很难，但一旦养成习惯就会上瘾。",
