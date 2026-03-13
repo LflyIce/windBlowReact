@@ -1,0 +1,282 @@
+/**
+ * 滚动性能优化样式
+ * 
+ * 这些样式专门用于提升滚动性能
+ */
+
+/* ========================================
+   1. 硬件加速
+   ======================================== */
+
+/* 启用 GPU 加速的元素 */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* 固定元素优化 */
+.fixed-element {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* ========================================
+   2. 滚动容器优化
+   ======================================== */
+
+/* 主滚动容器 */
+.smooth-scroll {
+  /* 使用平滑滚动 */
+  scroll-behavior: smooth;
+  
+  /* 提示浏览器优化 */
+  overflow-anchor: auto;
+  
+  /* 减少重绘 */
+  contain: layout style paint;
+}
+
+/* ========================================
+   3. 内容可见性优化
+   ======================================== */
+
+/* 长列表优化 - 跳过屏幕外的内容渲染 */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* ========================================
+   4. 减少重绘和回流
+   ======================================== */
+
+/* 避免 layout thrashing */
+.no-layout-thrashing {
+  /* 使用 transform 而不是 top/left */
+  transform: translate3d(0, 0, 0);
+  
+  /* 使用 opacity 而不是 visibility */
+  opacity: 1;
+  
+  /* 提示浏览器即将变化 */
+  will-change: opacity, transform;
+}
+
+/* ========================================
+   5. 图片优化
+   ======================================== */
+
+/* 防止图片加载时的布局偏移 */
+.img-aspect-ratio {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+/* ========================================
+   6. 动画性能优化
+   ======================================== */
+
+/* 只对 transform 和 opacity 使用动画 */
+.animated-performance {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+/* ========================================
+   7. 滚动条优化
+   ======================================== */
+
+/* 自定义滚动条 - 更流畅的滚动体验 */
+.smooth-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+/* WebKit 滚动条优化 */
+.smooth-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.smooth-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.smooth-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.smooth-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ========================================
+   8. 阴影优化
+   ======================================== */
+
+/* 使用 filter 代替 box-shadow 提升性能 */
+.elegant-shadow {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+/* ========================================
+   9. 文本渲染优化
+   ======================================== */
+
+/* 优化文本渲染 */
+.text-optimized {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "liga" 1, "kern" 1;
+}
+
+/* ========================================
+   10. 减少合成层
+   ======================================== */
+
+/* 避免不必要的合成层 */
+.no-composite {
+  transform: none;
+  will-change: auto;
+}
+
+/* ========================================
+   11. 背景优化
+   ======================================== */
+
+/* 固定背景的替代方案 (性能优化) */
+.bg-fixed-alternative {
+  position: relative;
+}
+
+.bg-fixed-alternative::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background: inherit;
+  background-attachment: fixed;
+}
+
+/* ========================================
+   12. 触摸优化 (移动设备)
+   ======================================== */
+
+/* 优化触摸滚动 */
+.touch-optimized {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ========================================
+   13. 减少重绘区域
+   ======================================== */
+
+/* 限制重绘范围 */
+.isolation-mode {
+  isolation: isolate;
+}
+
+/* ========================================
+   14. 字体加载优化
+   ======================================== */
+
+/* 字体显示策略 */
+.font-display-swap {
+  font-display: swap;
+}
+
+.font-display-optional {
+  font-display: optional;
+}
+
+.font-display-block {
+  font-display: block;
+}
+
+/* ========================================
+   15. 关键CSS优化
+   ======================================== */
+
+/* 减少关键CSS大小 */
+.critical-css {
+  /* 只包含首屏必需的样式 */
+}
+
+/* ========================================
+   16. 避免布局抖动
+   ======================================== */
+
+/* 预留空间避免CLS */
+.reserved-space {
+  min-height: 100vh;
+  min-width: 100%;
+}
+
+/* ========================================
+   17. 使用 CSS Containment
+   ======================================== */
+
+/* CSS Containment 优化 */
+.contain-strict {
+  contain: strict;
+}
+
+.contain-layout {
+  contain: layout;
+}
+
+.contain-paint {
+  contain: paint;
+}
+
+.contain-size {
+  contain: size;
+}
+
+/* ========================================
+   18. 减少选择器复杂度
+   ======================================== */
+
+/* 使用简单的类选择器 */
+.simple-selector {
+  /* 避免嵌套选择器 */
+}
+
+/* ========================================
+   19. 使用 CSS 变量
+   ======================================== */
+
+:root {
+  /* 定义常用值 */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --transition-slow: 500ms;
+  
+  --easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-in: cubic-bezier(0.4, 0, 1, 1);
+  --easing-out: cubic-bezier(0, 0, 0.2, 1);
+  --easing-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========================================
+   20. 移动端优化
+   ======================================== */
+
+@media (max-width: 768px) {
+  /* 移动端特定优化 */
+  .mobile-optimized {
+    /* 减少动画和特效 */
+    transform: none !important;
+    transition: none !important;
+  }
+}

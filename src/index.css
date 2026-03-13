@@ -3,6 +3,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 导入性能优化样式 */
+@import './styles/performance.css';
+
 /* 导入字体 */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 

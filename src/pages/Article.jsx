@@ -2,6 +2,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { postsData } from '../utils/data';
 import Sidebar from '../components/layout/Sidebar';
+import OptimizedImage from '../components/common/OptimizedImage';
 
 const Article = () => {
   const { id } = useParams();
@@ -150,10 +151,11 @@ const Article = () => {
                 
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center">
-                    <img 
-                      src={post.author.avatar} 
-                      alt={post.author.name} 
+                    <OptimizedImage
+                      src={post.author.avatar}
+                      alt={post.author.name}
                       className="w-10 h-10 rounded-full mr-3 border border-white/30"
+                      lazy={false}
                     />
                     <div>
                       <p className="font-medium text-white">{post.author.name}</p>
@@ -173,10 +175,11 @@ const Article = () => {
                   </div>
                 </div>
                 
-                <img 
-                  src={post.image} 
-                  alt={post.title} 
+                <OptimizedImage
+                  src={post.image}
+                  alt={post.title}
                   className="w-full h-64 md:h-96 object-cover rounded-lg mb-8 border border-white/20"
+                  lazy={true}
                 />
                 
                 <div className="flex flex-wrap gap-2 mb-8">
@@ -282,10 +285,11 @@ const Article = () => {
                 <article key={article.id} className="border-b border-white/20 pb-8 last:border-0 last:pb-0">
                   <div className="flex flex-col md:flex-row">
                     <div className="md:w-1/3 mb-4 md:mb-0 md:mr-6">
-                      <img 
-                        src={article.image} 
-                        alt={article.title} 
+                      <OptimizedImage
+                        src={article.image}
+                        alt={article.title}
                         className="w-full h-48 object-cover rounded-lg border border-white/20"
+                        lazy={true}
                       />
                     </div>
                     <div className="md:w-2/3">
@@ -295,10 +299,11 @@ const Article = () => {
                       <p className="text-white/70 mb-4 line-clamp-3">{article.excerpt}</p>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <img 
-                            src={article.author.avatar} 
-                            alt={article.author.name} 
+                          <OptimizedImage
+                            src={article.author.avatar}
+                            alt={article.author.name}
                             className="w-8 h-8 rounded-full mr-2 border border-white/30"
+                            lazy={true}
                           />
                           <span className="text-white/80 text-sm">{article.author.name}</span>
                         </div>

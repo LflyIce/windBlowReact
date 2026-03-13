@@ -1,17 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useScrollPosition } from '../../hooks/useScrollPosition';
 
 const BackToTop = () => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  // 监听滚动事件，控制按钮显示/隐藏
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsVisible(window.scrollY > 300);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  // 使用优化的滚动 Hook
+  const { scrollY } = useScrollPosition(300);
+  const isVisible = scrollY > 300;
 
   // 平滑滚动到顶部
   const scrollToTop = () => {

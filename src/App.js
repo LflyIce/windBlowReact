@@ -12,19 +12,11 @@ import MusicPlayer from "./pages/Music";
 import Travel from "./pages/Travel";
 import NotFound from "./pages/NotFound";
 import { postsData } from "./utils/data";
+import { useScrollPosition } from "./hooks/useScrollPosition";
 
 function App() {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  // 监听滚动事件，用于导航栏样式变化
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // 使用优化的滚动 Hook
+  const { isScrolled } = useScrollPosition(50);
 
   // 获取单篇文章数据
   const getPostById = (id) => {
@@ -44,10 +36,12 @@ function App() {
         // 2. 更改透明度值来改变遮罩的浓淡：
         //    - 更透明（更亮）：rgba(31, 41, 55, 0.5)
         //    - 更不透明（更暗）：rgba(31, 41, 55, 0.95)
+        // 性能优化: 移除 backgroundAttachment: 'fixed' 以提升滚动性能
         background: "linear-gradient(rgba(31, 41, 55, 0.8), rgba(31, 41, 55, 0.9)), url('/imgs/background.jpg')",
         backgroundSize: "cover",
-        backgroundAttachment: "fixed",
         backgroundPosition: "center",
+        // 使用 will-change 提示浏览器优化
+        willChange: "scroll-position",
       }}
     >
       <div className="flex flex-col min-h-screen">

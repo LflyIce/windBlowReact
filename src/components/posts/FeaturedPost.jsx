@@ -1,19 +1,17 @@
 import { Link } from 'react-router-dom';
+import OptimizedImage from '../common/OptimizedImage';
 
 const FeaturedPost = ({ post }) => {
   return (
     <div className="bg-gradient-to-r from-black/80 to-black/60 rounded-2xl overflow-hidden shadow-xl h-full relative">
       {/* 背景图片 */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
-        <img 
-          src={post.image} 
-          alt={post.title} 
+        <OptimizedImage
+          src={post.image}
+          alt={post.title}
           className="absolute inset-0 w-full h-full object-cover"
-          onLoad={(e) => {
-            // 隐藏占位符
-            e.target.previousElementSibling.style.display = 'none';
-          }}
+          lazy={false}
+          placeholder={<div className="absolute inset-0 bg-gray-200 animate-pulse"></div>}
         />
         {/* 渐变遮罩 */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>

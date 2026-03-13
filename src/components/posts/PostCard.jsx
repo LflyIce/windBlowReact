@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import OptimizedImage from '../common/OptimizedImage';
 
 const PostCard = ({ post }) => {
   // 根据分类获取对应的颜色类
@@ -18,18 +19,12 @@ const PostCard = ({ post }) => {
     <article className="bg-white/10 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg card-hover border border-white/20 transition-all hover:shadow-xl">
       <div className="md:flex">
         <div className="md:w-1/3">
-          <div className="relative h-full">
-            <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
-            <img 
-              src={post.image} 
-              alt={post.title} 
-              className="w-full h-56 md:h-full object-cover"
-              onLoad={(e) => {
-                // 隐藏占位符
-                e.target.previousElementSibling.style.display = 'none';
-              }}
-            />
-          </div>
+          <OptimizedImage
+            src={post.image}
+            alt={post.title}
+            className="w-full h-56 md:h-full object-cover"
+            lazy={true}
+          />
         </div>
         <div className="md:w-2/3 p-6 md:p-8">
           <div className="flex items-center mb-4">
