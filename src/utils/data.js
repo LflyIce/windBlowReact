@@ -1,10 +1,12 @@
+import { getImageUrl } from '../config/cdn';
+
 // 作者信息
 export const author = {
   id: 1,
   name: "玖月",
   title: "全栈开发工程师 | 游戏糕手 | 社交I人",
   bio: "探索生活的本质，分享关于极简主义、个人成长和可持续生活的思考与实践。",
-  avatar: "/imgs/avatar.jpg",
+  avatar: getImageUrl("/imgs/avatar.jpg"),
   socialLinks: [
     { icon: "fa fa-twitter", url: "#" },
     { icon: "fa fa-instagram", url: "#" },
@@ -30,7 +32,7 @@ export const featuredPost = {
   category: "生活方式",
   date: "2023年6月15日",
   readTime: "8分钟阅读",
-  image: "/imgs/featured.jpg",
+  image: getImageUrl("/imgs/featured.jpg"),
   author: author,
   likes: 245,
   tags: ["专注力", "创造力", "数字时代", "深度工作"],
@@ -38,7 +40,7 @@ export const featuredPost = {
     {
       id: 1,
       authorName: "胖胖龙",
-      authorAvatar: "/imgs/comment1.jpg",
+      authorAvatar: getImageUrl("/imgs/comment1.jpg"),
       date: "2023年6月16日",
       content: "非常有见地的文章！我一直在为分心问题困扰，这些方法很实用。",
       likes: 12
@@ -46,7 +48,7 @@ export const featuredPost = {
     {
       id: 2,
       authorName: "爆爆龙",
-      authorAvatar: "/imgs/comment2.jpg",
+      authorAvatar: getImageUrl("/imgs/comment2.jpg"),
       date: "2023年6月17日",
       content: "深度工作的理念真的改变了我的工作方式，感谢分享！",
       likes: 8
@@ -128,25 +130,25 @@ export const popularPosts = [
     id: 6,
     title: "如何建立健康的数字习惯，减少屏幕时间",
     date: "2023年3月10日",
-    image: "/imgs/popular1.jpg"
+    image: getImageUrl("/imgs/popular1.jpg")
   },
   {
     id: 7,
     title: "冥想入门：每天10分钟的平静练习",
     date: "2023年2月25日",
-    image: "/imgs/popular2.jpg"
+    image: getImageUrl("/imgs/popular2.jpg")
   },
   {
     id: 8,
     title: "一年阅读100本书的实用方法",
     date: "2023年1月18日",
-    image: "/imgs/popular3.jpg"
+    image: getImageUrl("/imgs/popular3.jpg")
   },
   {
     id: 9,
     title: "建立自信的5个日常练习",
     date: "2022年12月5日",
-    image: "/imgs/popular4.jpg"
+    image: getImageUrl("/imgs/popular4.jpg")
   }
 ];
 

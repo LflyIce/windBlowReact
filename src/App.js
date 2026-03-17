@@ -13,6 +13,7 @@ import Travel from "./pages/Travel";
 import NotFound from "./pages/NotFound";
 import { postsData } from "./utils/data";
 import { useScrollPosition } from "./hooks/useScrollPosition";
+import { getImageUrl } from "./config/cdn";
 
 function App() {
   // 使用优化的滚动 Hook
@@ -37,7 +38,7 @@ function App() {
         //    - 更透明（更亮）：rgba(31, 41, 55, 0.5)
         //    - 更不透明（更暗）：rgba(31, 41, 55, 0.95)
         // 性能优化: 移除 backgroundAttachment: 'fixed' 以提升滚动性能
-        background: "linear-gradient(rgba(31, 41, 55, 0.8), rgba(31, 41, 55, 0.9)), url('/imgs/background.jpg')",
+        background: `linear-gradient(rgba(31, 41, 55, 0.8), rgba(31, 41, 55, 0.9)), url('${getImageUrl('/imgs/background.jpg')}')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         // 使用 will-change 提示浏览器优化
